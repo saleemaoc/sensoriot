@@ -13,11 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Accelerometer" />
-
+        <!-- accelerometer -->
         <CheckBox
             android:id="@+id/check_accel"
             android:layout_width="wrap_content"
@@ -25,65 +21,253 @@
             android:layout_alignParentRight="true"
             android:onClick="checkSelected" />
 
-        <TextView
-            android:id="@+id/label_gyro"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/container_accelerometer"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/check_accel"
-            android:text="Gyrometer" />
+            android:layout_toLeftOf="@id/check_accel"
+            android:orientation="vertical"
+            android:paddingBottom="10dp">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accelerometer" />
+
+            <LinearLayout
+                android:id="@+id/accelerometer_values"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/value_x_accelerometer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_y_accelerometer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_z_accelerometer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Gyroscope -->
         <CheckBox
             android:id="@+id/check_gyro"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_below="@id/check_accel"
+            android:layout_below="@id/container_accelerometer"
             android:onClick="checkSelected" />
 
-        <TextView
-            android:id="@+id/label_gps"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/container_gyro"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/check_gyro"
-            android:text="GPS" />
+            android:layout_below="@id/container_accelerometer"
+            android:layout_toLeftOf="@id/check_gyro"
+            android:orientation="vertical"
+            android:paddingBottom="10dp">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Gyroscope" />
+
+            <LinearLayout
+                android:id="@+id/values_gyro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:orientation="vertical"
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:id="@+id/value_x_gyro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_y_gyro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_z_gyro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- GPS -->
         <CheckBox
             android:id="@+id/check_gps"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_below="@+id/check_gyro"
+            android:layout_below="@id/container_gyro"
             android:onClick="checkSelected" />
 
-        <TextView
-            android:id="@+id/label_orientation"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/container_gps"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/check_gps"
-            android:text="Orientation" />
+            android:layout_below="@id/container_gyro"
+            android:layout_toLeftOf="@id/check_gps"
+            android:orientation="vertical"
+            android:paddingBottom="10dp">
 
-        <CheckBox
-            android:id="@+id/check_orientation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/check_gps"
-            android:onClick="checkSelected" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GPS" />
 
-        <TextView
-            android:id="@+id/label_rotation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/check_orientation"
-            android:text="Rotation" />
+            <LinearLayout
+                android:id="@+id/values_gps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:orientation="vertical"
+                android:paddingBottom="10dp">
 
+                <TextView
+                    android:id="@+id/value_x_gps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_y_gps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_z_gps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- rotation -->
         <CheckBox
             android:id="@+id/check_rotation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
-            android:layout_below="@+id/check_orientation"
+            android:layout_below="@+id/container_gps"
             android:onClick="checkSelected" />
+
+        <LinearLayout
+            android:id="@+id/container_rotation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/container_gps"
+            android:layout_toLeftOf="@id/check_rotation"
+            android:orientation="vertical"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rotation" />
+
+            <LinearLayout
+                android:id="@+id/values_orientation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:orientation="vertical"
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:id="@+id/value_x_rotation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_y_rotation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_z_rotation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <!-- orientation -->
+        <CheckBox
+            android:id="@+id/check_orientation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/container_rotation"
+            android:onClick="checkSelected" />
+
+        <LinearLayout
+            android:id="@+id/container_orientation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/container_rotation"
+            android:layout_toLeftOf="@id/check_orientation"
+            android:orientation="vertical"
+            android:paddingBottom="10dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Orientation" />
+
+            <LinearLayout
+                android:id="@+id/values_rotation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:orientation="vertical"
+                android:paddingBottom="10dp">
+
+                <TextView
+                    android:id="@+id/value_x_orientation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_y_orientation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/value_z_orientation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+
     </RelativeLayout>
 
 </android.support.constraint.ConstraintLayout>

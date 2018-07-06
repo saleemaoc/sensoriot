@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /*
@@ -203,24 +204,44 @@ public class MainActivity extends AppCompatActivity implements
         switch (moduleType) {
             case ACCELEROMETER:
                 SKAccelerometerData accelerometerData = (SKAccelerometerData) sensorData;
-                Utils.logE(getClass().getName(), "Accelerometer: X = " + accelerometerData.getX() + "; Y = " + accelerometerData.getY());
+//                Utils.logE(getClass().getName(), "Accelerometer: X = " + accelerometerData.getX() + "; Y = " + accelerometerData.getY());
+                ((TextView) findViewById(R.id.value_x_accelerometer)).setText("X  = " + accelerometerData.getX());
+                ((TextView) findViewById(R.id.value_y_accelerometer)).setText("Y  = " + accelerometerData.getY());
+                ((TextView) findViewById(R.id.value_z_accelerometer)).setText("Z  = " + accelerometerData.getZ());
                 break;
+
             case GYROSCOPE:
                 SKGyroscopeData gyroData = (SKGyroscopeData) sensorData;
-                Utils.logE(getClass().getName(), "Gyroscope: X = " + gyroData.getX() + "; Y = " + gyroData.getY());
+//                Utils.logE(getClass().getName(), "Gyroscope: X = " + gyroData.getX() + "; Y = " + gyroData.getY());
+                ((TextView) findViewById(R.id.value_x_gyro)).setText("X  = " + gyroData.getX());
+                ((TextView) findViewById(R.id.value_y_gyro)).setText("Y  = " + gyroData.getY());
+                ((TextView) findViewById(R.id.value_z_gyro)).setText("Z  = " + gyroData.getZ());
                 break;
+
             case LOCATION:
                 SKLocationData gpsData = (SKLocationData) sensorData;
-                Utils.logE(getClass().getName(), "GPS: X = " + gpsData.getLocation().getLatitude() + "; Y = " + gpsData.getLocation().getLongitude());
+//                Utils.logE(getClass().getName(), "GPS: X = " + gpsData.getLocation().getLatitude() + "; Y = " + gpsData.getLocation().getLongitude());
+                ((TextView) findViewById(R.id.value_x_gps)).setText("Lon  = " + gpsData.getLocation().getLongitude());
+                ((TextView) findViewById(R.id.value_y_gps)).setText("Lat  = " + gpsData.getLocation().getLatitude());
+                ((TextView) findViewById(R.id.value_z_gps)).setText("Alt  = " + gpsData.getLocation().getAltitude());
                 break;
-            case MAGNETOMETER:
-                SKMagnetometerData orientationData = (SKMagnetometerData) sensorData;
-                Utils.logE(getClass().getName(), "Orientation: X = " + orientationData.getX() + "; Y = " + orientationData.getY());
-                break;
+
             case ROTATION:
                 SKRotationData rotationData = (SKRotationData) sensorData;
-                Utils.logE(getClass().getName(), "Rotation: X = " + rotationData.getX() + "; Y = " + rotationData.getY());
+//                Utils.logE(getClass().getName(), "Rotation: X = " + rotationData.getX() + "; Y = " + rotationData.getY());
+                ((TextView) findViewById(R.id.value_x_rotation)).setText("X  = " + rotationData.getX());
+                ((TextView) findViewById(R.id.value_y_rotation)).setText("Y  = " + rotationData.getY());
+                ((TextView) findViewById(R.id.value_z_rotation)).setText("Z  = " + rotationData.getZ());
                 break;
+
+            case MAGNETOMETER:
+                SKMagnetometerData orientationData = (SKMagnetometerData) sensorData;
+//                Utils.logE(getClass().getName(), "Orientation: X = " + orientationData.getX() + "; Y = " + orientationData.getY());
+                ((TextView) findViewById(R.id.value_x_orientation)).setText("X  = " + orientationData.getX());
+                ((TextView) findViewById(R.id.value_y_orientation)).setText("Y  = " + orientationData.getY());
+                ((TextView) findViewById(R.id.value_z_orientation)).setText("Z  = " + orientationData.getZ());
+                break;
+
         }
     }
 }
