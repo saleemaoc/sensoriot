@@ -30,6 +30,7 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
 
+    compile 'com.amazonaws:aws-android-sdk-iot:2.6.+'
     implementation 'org.sensingkit:SensingKitLib-debug@aar'
 
     testImplementation 'junit:junit:4.12'
