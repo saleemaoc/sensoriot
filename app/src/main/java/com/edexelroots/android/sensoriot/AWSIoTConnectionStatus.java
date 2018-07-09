@@ -49,4 +49,12 @@ public class AWSIoTConnectionStatus implements AWSIotMqttClientStatusCallback {
             }
         });
     }
+
+    public void reportStatus(String msg) {
+        mStatusReporter.setText(msg);
+    }
+
+    public void clearStatus() {
+        mStatusReporter.setText("");
+    }
 }
