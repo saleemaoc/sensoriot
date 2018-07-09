@@ -60,7 +60,6 @@ public class MqttPublishManager {
         // tvClientId.setText(clientId);
 
         // Initialize the AWS Cognito credentials provider
-
         credentialsProvider = new CognitoCachingCredentialsProvider(
                 context, // context
                 COGNITO_POOL_ID, // Identity Pool ID
@@ -75,20 +74,6 @@ public class MqttPublishManager {
 
         // MQTT Client
         mqttManager = new AWSIotMqttManager(clientId, CUSTOMER_SPECIFIC_ENDPOINT);
-
-        // The following block uses a Cognito credentials provider for authentication with AWS IoT.
-        // TODO - use a checkbox to enable/disable publishing to AWS IoT
-/*        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                mContext.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        btnConnect.setEnabled(true);
-                    }
-                });
-            }
-        }).start();*/
     }
 
     public void connectToAWS() {
@@ -113,7 +98,6 @@ public class MqttPublishManager {
             Utils.logE(LOG_TAG, "Publish error." + e);
             mAwsIoTConnectionStatusCallback.reportStatus("Publish error!");
         }
-
     }
 
     public void disconnectMqtt() {
@@ -123,44 +107,5 @@ public class MqttPublishManager {
         } catch (Exception e) {
             Utils.logE(LOG_TAG, "Disconnect error." + e);
         }
-
     }
-
-
-        /*        View.OnClickListener subscribeClick = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                final String topic = "aws/things/controllerBox/shadow/update";
-
-                Utils.logE(LOG_TAG, "topic = " + topic);
-
-                try {
-                    mqttManager.subscribeToTopic(topic, AWSIotMqttQos.QOS0,
-                            new AWSIotMqttNewMessageCallback() {
-                                @Override
-                                public void onMessageArrived(final String topic, final byte[] data) {
-                                    mContext.runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            try {
-                                                String message = new String(data, "UTF-8");
-                                                Utils.logE(LOG_TAG, "Message arrived:");
-                                                Utils.logE(LOG_TAG, "   Topic: " + topic);
-                                                Utils.logE(LOG_TAG, " Message: " + message);
-
-                                                // tvLastMessage.setText(message);
-
-                                            } catch (UnsupportedEncodingException e) {
-                                                Utils.logE(LOG_TAG, "Message encoding error." + e);
-                                            }
-                                        }
-                                    });
-                                }
-                            });
-                } catch (Exception e) {
-                    Utils.logE(LOG_TAG, "Subscription error." + e);
-                }
-            }
-        };*/
 }
