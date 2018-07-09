@@ -1,5 +1,9 @@
 package com.edexelroots.android.sensoriot;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -18,6 +22,25 @@ import com.ubhave.sensormanager.sensors.SensorInterface;
 import com.ubhave.sensormanager.sensors.SensorUtils;
 */
 
+import com.amazonaws.auth.AWSIdentityProvider;
+import com.amazonaws.auth.AWSSessionCredentials;
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobile.auth.core.IdentityManager;
+import com.amazonaws.mobile.auth.core.IdentityProvider;
+import com.amazonaws.mobile.auth.core.SignInResultHandler;
+import com.amazonaws.mobile.auth.ui.AuthUIConfiguration;
+import com.amazonaws.mobile.auth.ui.SignInUI;
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobile.client.AWSStartupHandler;
+import com.amazonaws.mobile.client.AWSStartupResult;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoDevice;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserSession;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ChallengeContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.MultiFactorAuthenticationContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
+
 import org.sensingkit.sensingkitlib.SKException;
 import org.sensingkit.sensingkitlib.SKSensorDataListener;
 import org.sensingkit.sensingkitlib.SKSensorModuleType;
@@ -31,6 +54,7 @@ import org.sensingkit.sensingkitlib.data.SKRotationData;
 import org.sensingkit.sensingkitlib.data.SKSensorData;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements
         CompoundButton.OnCheckedChangeListener,
@@ -77,10 +101,6 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        mConnectionStatus = new AWSIoTConnectionStatus(this, (TextView) findViewById(R.id.label_aws_connect));
-        mPublishManager =  new MqttPublishManager(this, mConnectionStatus);
-        mPublishManager.connectToAWS();
-
         checkAccelero.setOnCheckedChangeListener(this);
         checkGyro.setOnCheckedChangeListener(this);
         checkGPS.setOnCheckedChangeListener(this);
@@ -96,8 +116,35 @@ public class MainActivity extends AppCompatActivity implements
         } catch (SKException e) {
             e.printStackTrace();
         }
+
+        signInAWSCognito();
     }
 
+    protected void signInAWSCognito() {
+        AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
+            @Override
+            public void onComplete(AWSStartupResult awsStartupResult) {
+
+                final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
+                if(!identityManager.isUserSignedIn()) {
+                    AuthUIConfiguration config =
+                            new AuthUIConfiguration.Builder()
+                                    .userPools(true)  // true? show the Email and Password UI
+                                    .backgroundColor(Color.BLUE) // Change the backgroundColor
+                                    .isBackgroundColorFullScreen(true) // Full screen backgroundColor the backgroundColor full screenff
+                                    .fontFamily("sans-serif-light") // Apply sans-serif-light as the global font
+                                    .canCancel(true)
+                                    .build();
+
+                    SignInUI signInUI = (SignInUI) AWSMobileClient.getInstance().getClient(MainActivity.this, SignInUI.class);
+                    signInUI.login(MainActivity.this, MainActivity.class).authUIConfiguration(config).execute();
+                }
+                mConnectionStatus = new AWSIoTConnectionStatus(MainActivity.this, (TextView) findViewById(R.id.label_aws_connect));
+                mPublishManager =  new MqttPublishManager(MainActivity.this, mConnectionStatus);
+                mPublishManager.setupSession();
+            }
+        }).execute();
+    }
     protected void registerSensor(SKSensorModuleType sensorModuleType) {
         try {
             if(!mSensingKitLib.isSensorModuleRegistered(sensorModuleType)) {
@@ -258,4 +305,5 @@ public class MainActivity extends AppCompatActivity implements
             mPublishManager.publishToAwsIoT(msg);
         }
     }
+
 }

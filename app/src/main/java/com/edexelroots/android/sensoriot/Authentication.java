@@ -33,7 +33,7 @@ import java.util.Map;
 
 public class Authentication extends AppCompatActivity {
 
-    public static CognitoCachingCredentialsProvider credentialsProvider;
+//    public static CognitoCachingCredentialsProvider credentialsProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +42,7 @@ public class Authentication extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+/*
 
         AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
             @Override
@@ -97,10 +98,12 @@ public class Authentication extends AppCompatActivity {
                 }
             }
         }).execute();
+*/
 
     }
+/*
 
-    class CredentialProvider extends AsyncTask<String, Void, Void> {
+    public class CredentialProvider extends AsyncTask<String, Void, Void> {
 
         private Exception exception;
 
@@ -129,6 +132,7 @@ public class Authentication extends AppCompatActivity {
             finish();
         }
     }
+*/
 
     @Override
     protected void onDestroy() {
