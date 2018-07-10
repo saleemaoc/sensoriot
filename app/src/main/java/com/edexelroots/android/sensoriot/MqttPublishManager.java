@@ -42,21 +42,26 @@ public class MqttPublishManager {
 
     // --- Constants to modify per your configuration ---
 
-    // Customer specific IoT endpoint
-    // AWS Iot CLI describe-endpoint call returns: XXXXXXXXXX.iot.<region>.amazonaws.com,
+    // Customer specific IoT endpoint -- use aws iot describe-endpoint
     private static final String CUSTOMER_SPECIFIC_ENDPOINT = "a6mohze0r9216.iot.ap-southeast-1.amazonaws.com";
 
     // Cognito pool ID
-    public static final String COGNITO_POOL_ID = "ap-southeast-1:089b5c41-6644-44e3-a2db-5d9ae54703aa";
+//    public static final String COGNITO_POOL_ID = "ap-southeast-1:089b5c41-6644-44e3-a2db-5d9ae54703aa";
+    public static final String COGNITO_POOL_ID = "ap-southeast-1:92a952b7-baf7-4be9-9dc2-4db9dfcd828c";
 
     // Region of AWS IoT
     public static final Regions MY_REGION = Regions.AP_SOUTHEAST_1;
+
+    //    String userPoolId = "ap-southeast-1_EnF2okBJS";
+    public static String userPoolId = "ap-southeast-1_FxJmL7BJM";
+    //    String policyName = "policy1";
+    public static String policyName = "policy2";
 
 
     AWSIotMqttManager mqttManager;
     String clientId;
 
-    public CognitoCachingCredentialsProvider credentialsProvider;
+    private CognitoCachingCredentialsProvider credentialsProvider;
     AWSIoTConnectionStatus mAwsIoTConnectionStatusCallback = null;
 
     Activity mContext = null;
@@ -66,18 +71,11 @@ public class MqttPublishManager {
         this.mAwsIoTConnectionStatusCallback = connectionStatusCallback;
 
         // MQTT client IDs are required to be unique per AWS IoT account.
-        // This UUID is "practically unique" but does not _guarantee_
-        // uniqueness.
         clientId = UUID.randomUUID().toString();
-        // tvClientId.setText(clientId);
+    }
 
-        // Initialize the AWS Cognito credentials provider
-        credentialsProvider = new CognitoCachingCredentialsProvider(
-                context, // context
-                COGNITO_POOL_ID, // Identity Pool ID
-                MY_REGION // Region
-        );
-
+    public void setCredentialsProvider(CognitoCachingCredentialsProvider cp) {
+        this.credentialsProvider = cp;
     }
 
     public void connectToAWS() {
@@ -113,91 +111,56 @@ public class MqttPublishManager {
     protected void setupSession() {
         final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
         final CognitoUserPool userPool = new CognitoUserPool(mContext, identityManager.getConfiguration());
-        userPool.getCurrentUser().getSessionInBackground(new AuthenticationHandler() {
-            @Override
-            public void onSuccess(CognitoUserSession userSession, CognitoDevice newDevice) {
-                final String idToken = userSession.getIdToken().getJWTToken();
-                identityManager.getUserID(new IdentityHandler() {
-                    @Override
-                    public void onIdentityId(String identityId) {
-                        Utils.logE(getClass().getName(), "identity id: " + identityId);
-                        // ap-southeast-1:908fba04-ed69-4766-95f2-49b60bb1c329
-                        new CredentialProvider().execute(idToken, identityId);
-                    }
-
-                    @Override
-                    public void handleError(Exception exception) {
-
-                    }
-                });
-                Utils.logE(getClass().getName(), "user jwt token: " + userSession.getIdToken().getJWTToken());
-            }
-
-            @Override
-            public void getAuthenticationDetails(AuthenticationContinuation authenticationContinuation, String userId) {
-
-            }
-
-            @Override
-            public void getMFACode(MultiFactorAuthenticationContinuation continuation) {
-
-            }
-
-            @Override
-            public void authenticationChallenge(ChallengeContinuation continuation) {
-
-            }
-
-            @Override
-            public void onFailure(Exception exception) {
-
-            }
-        });
+        userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(identityManager));
     }
-    public class CredentialProvider extends AsyncTask<String, Void, Void> {
 
-        private Exception exception;
 
-        protected Void doInBackground(String... args) {
-            try {
-                credentialsProvider = new CognitoCachingCredentialsProvider(mContext, MqttPublishManager.COGNITO_POOL_ID, MqttPublishManager.MY_REGION);
+    class AWSAuthHandler implements AuthenticationHandler {
 
-                String identityId = args[1];
-                String policyName = "policy1";
+        IdentityManager identityManager = null;
 
-                AttachPrincipalPolicyRequest policyRequest = new AttachPrincipalPolicyRequest();//.withPrincipal(identityId).withPolicyName(policyName);
-                policyRequest.setPrincipal(identityId);
-                policyRequest.setPolicyName(policyName);
-                AWSIotClient mIotAndroidClient = new AWSIotClient(credentialsProvider);
-                mIotAndroidClient.setRegion(Region.getRegion(Regions.AP_SOUTHEAST_1));
-                mIotAndroidClient.attachPrincipalPolicy(policyRequest);
-
-                AWSSessionCredentials sessionCredentials = credentialsProvider.getCredentials();
-                Map<String, String> logins = new HashMap<>();
-                Utils.logE(getClass().getName(), "args[0]: " + args[0]);
-                logins.put("cognito-idp.ap-southeast-1.amazonaws.com/ap-southeast-1_EnF2okBJS", args[0]);
-
-                credentialsProvider.setLogins(logins);
-                credentialsProvider.refresh();
-                Utils.logE(getClass().getName(), "doInBackground! " + credentialsProvider.getCredentials().getAWSAccessKeyId());
-
-                if(credentialsProvider != null) {
-                    credentialsProvider.setLogins(credentialsProvider.getLogins());
-                } else {
-                    Utils.logE(getClass().getName(), " >> credentialProvider is null");
-                }
-
-            } catch (Exception e) {
-                this.exception = e;
-            } finally {
-            }
-            return null;
+        public AWSAuthHandler(IdentityManager im) {
+            this.identityManager = im;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            // TODO - anything to do
-            connectToAWS();
+        public void onSuccess(CognitoUserSession userSession, CognitoDevice newDevice) {
+            final String idToken = userSession.getIdToken().getJWTToken();
+            identityManager.getUserID(new IdentityHandler() {
+                @Override
+                public void onIdentityId(String identityId) {
+                    //Utils.logE(getClass().getName(), "identity id: " + identityId);
+                    new CredentialProvider(MqttPublishManager.this, mContext).execute(idToken, identityId);
+                }
+
+                @Override
+                public void handleError(Exception exception) {
+                    Utils.logE(getClass().getName(), exception.getMessage());
+                    exception.printStackTrace();
+                }
+            });
+        }
+
+        @Override
+        public void getAuthenticationDetails(AuthenticationContinuation authenticationContinuation, String userId) {
+
+        }
+
+        @Override
+        public void getMFACode(MultiFactorAuthenticationContinuation continuation) {
+
+        }
+
+        @Override
+        public void authenticationChallenge(ChallengeContinuation continuation) {
+
+        }
+
+        @Override
+        public void onFailure(Exception exception) {
+
         }
     }
+
+
 }

@@ -1,9 +1,13 @@
 package com.edexelroots.android.sensoriot;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -41,6 +45,7 @@ import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.Chal
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.MultiFactorAuthenticationContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
 
+import org.json.JSONObject;
 import org.sensingkit.sensingkitlib.SKException;
 import org.sensingkit.sensingkitlib.SKSensorDataListener;
 import org.sensingkit.sensingkitlib.SKSensorModuleType;
@@ -52,6 +57,7 @@ import org.sensingkit.sensingkitlib.data.SKLocationData;
 import org.sensingkit.sensingkitlib.data.SKMagnetometerData;
 import org.sensingkit.sensingkitlib.data.SKRotationData;
 import org.sensingkit.sensingkitlib.data.SKSensorData;
+import org.sensingkit.sensingkitlib.modules.SKLocation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -68,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements
             SKSensorModuleType.ROTATION
     };
 
+    private static final int MY_PERMISSIONS_REQUEST_FINE_LOCATION = 111;
+
     HashMap<SKSensorModuleType, String> sensorNames = new HashMap<>(5);
     public boolean mPublishToAWSIoT = false;
     MqttPublishManager mPublishManager = null;
@@ -79,11 +87,11 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        sensorNames.put(SKSensorModuleType.ACCELEROMETER, "ACCELEROMETER");
-        sensorNames.put(SKSensorModuleType.GYROSCOPE, "GYROSCOPE");
-        sensorNames.put(SKSensorModuleType.LOCATION, "LOCATION");
-        sensorNames.put(SKSensorModuleType.MAGNETOMETER, "MAGNETOMETER");
-        sensorNames.put(SKSensorModuleType.ROTATION, "ROTATION");
+        sensorNames.put(SKSensorModuleType.ACCELEROMETER, "Accelerometer");
+        sensorNames.put(SKSensorModuleType.GYROSCOPE, "Gyroscope");
+        sensorNames.put(SKSensorModuleType.LOCATION, "Location");
+        sensorNames.put(SKSensorModuleType.MAGNETOMETER, "Orientation");
+        sensorNames.put(SKSensorModuleType.ROTATION, "Rotation");
 
         CheckBox checkAccelero = findViewById(R.id.check_accel);
         CheckBox checkGyro = findViewById(R.id.check_gyro);
@@ -117,9 +125,35 @@ public class MainActivity extends AppCompatActivity implements
             e.printStackTrace();
         }
 
+        checkPerms();
         signInAWSCognito();
     }
 
+    public void checkPerms() {
+/// Here, thisActivity is the current activity
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_CONTACTS)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_CONTACTS)) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+            } else {
+                // No explanation needed; request the permission
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_FINE_LOCATION);
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+            }
+        } else {
+            // Permission has already been granted
+        }
+    }
     protected void signInAWSCognito() {
         AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
             @Override
@@ -245,59 +279,97 @@ public class MainActivity extends AppCompatActivity implements
     public void onDataReceived(final SKSensorModuleType moduleType, final SKSensorData sensorData) {
 
         String msg = "";
-        double x = 0, y, z;
+        double x = 0, y, z, w;
         switch (moduleType) {
             case ACCELEROMETER:
                 SKAccelerometerData accelerometerData = (SKAccelerometerData) sensorData;
-//                Utils.logE(getClass().getName(), "Accelerometer: X = " + accelerometerData.getX() + "; Y = " + accelerometerData.getY());
                 ((TextView) findViewById(R.id.value_x_accelerometer)).setText(String.format("X  = %.20f", (x = accelerometerData.getX())));
                 ((TextView) findViewById(R.id.value_y_accelerometer)).setText(String.format("Y  = %.20f", (y = accelerometerData.getY())));
                 ((TextView) findViewById(R.id.value_z_accelerometer)).setText(String.format("Z  = %.20f", ((z = accelerometerData.getZ()))));
                 msg = sensorNames.get(moduleType) + ": X = " + x + ", Y = " + y + ", Z = " + z;
-
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("type", sensorNames.get(moduleType));
+                    jo.put("x", x);
+                    jo.put("y", y);
+                    jo.put("z", z);
+                    msg = jo.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
 
             case GYROSCOPE:
                 SKGyroscopeData gyroData = (SKGyroscopeData) sensorData;
-//                Utils.logE(getClass().getName(), "Gyroscope: X = " + gyroData.getX() + "; Y = " + gyroData.getY());
                 ((TextView) findViewById(R.id.value_x_gyro)).setText(String.format("X  = %.20f", (x = gyroData.getX())));
                 ((TextView) findViewById(R.id.value_y_gyro)).setText(String.format("Y  = %.20f", (y = gyroData.getY())));
                 ((TextView) findViewById(R.id.value_z_gyro)).setText(String.format("Z  = %.20f", (z = gyroData.getZ())));
-                msg = sensorNames.get(moduleType) + ": X = " + x + ", Y = " + y + ", Z = " + z;
-
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("type", sensorNames.get(moduleType));
+                    jo.put("x", x);
+                    jo.put("y", y);
+                    jo.put("z", z);
+                    msg = jo.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
 
             case LOCATION:
                 SKLocationData gpsData = (SKLocationData) sensorData;
-//                Utils.logE(getClass().getName(), "GPS: X = " + gpsData.getLocation().getLatitude() + "; Y = " + gpsData.getLocation().getLongitude());
                 ((TextView) findViewById(R.id.value_x_gps)).setText(String.format("Lon  = %.20f", (x = gpsData.getLocation().getLongitude())));
                 ((TextView) findViewById(R.id.value_y_gps)).setText(String.format("Lat  = %.20f", (y = gpsData.getLocation().getLatitude())));
                 ((TextView) findViewById(R.id.value_z_gps)).setText(String.format("Alt  = %.20f", (z = gpsData.getLocation().getAltitude())));
-                msg = sensorNames.get(moduleType) + ": X = " + x + ", Y = " + y + ", Z = " + z;
-
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("type", sensorNames.get(moduleType));
+                    jo.put("longitude", x);
+                    jo.put("latitude", y);
+                    jo.put("altitude", z);
+                    msg = jo.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
 
             case ROTATION:
                 SKRotationData rotationData = (SKRotationData) sensorData;
-//                Utils.logE(getClass().getName(), "Rotation: X = " + rotationData.getX() + "; Y = " + rotationData.getY());
                 ((TextView) findViewById(R.id.value_x_rotation)).setText(String.format("X  = %.20f", (x = rotationData.getX())));
                 ((TextView) findViewById(R.id.value_y_rotation)).setText(String.format("Y  = %.20f", (y = rotationData.getY())));
-                ((TextView) findViewById(R.id.value_z_rotation)).setText(String.format("Z  = %.20f", (z = rotationData.getZ())));
-                msg = sensorNames.get(moduleType) + ": X = " + x + ", Y = " + y + ", Z = " + z;
+                ((TextView) findViewById(R.id.value_w_rotation)).setText(String.format("Z  = %.20f", (z = rotationData.getZ())));
+                ((TextView) findViewById(R.id.value_w_rotation)).setText(String.format("W  = %.20f", (w = rotationData.getCos())));
 
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("type", sensorNames.get(moduleType));
+                    jo.put("x", x);
+                    jo.put("y", y);
+                    jo.put("z", z);
+                    jo.put("angle", w);
+                    msg = jo.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
 
             case MAGNETOMETER:
                 SKMagnetometerData orientationData = (SKMagnetometerData) sensorData;
-//                Utils.logE(getClass().getName(), "Orientation: X = " + orientationData.getX() + "; Y = " + orientationData.getY());
                 ((TextView) findViewById(R.id.value_x_orientation)).setText(String.format("X  = %.20f", (x = orientationData.getX())));
                 ((TextView) findViewById(R.id.value_y_orientation)).setText(String.format("Y  = %.20f", (y = orientationData.getY())));
                 ((TextView) findViewById(R.id.value_z_orientation)).setText(String.format("Z  = %.20f", (z = orientationData.getZ())));
-                msg = sensorNames.get(moduleType) + ": X = " + x + ", Y = " + y + ", Z = " + z;
-
+                try {
+                    JSONObject jo = new JSONObject();
+                    jo.put("type", sensorNames.get(moduleType));
+                    jo.put("x", x);
+                    jo.put("y", y);
+                    jo.put("z", z);
+                    msg = jo.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
         }
-
 
         if(mPublishToAWSIoT && !TextUtils.isEmpty(msg)) {
             // publish data to AWS IoT for sensors
