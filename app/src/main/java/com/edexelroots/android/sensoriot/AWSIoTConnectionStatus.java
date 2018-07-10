@@ -26,25 +26,24 @@ public class AWSIoTConnectionStatus implements AWSIotMqttClientStatusCallback {
             public void run() {
 
                 if (status == AWSIotMqttClientStatus.Connecting) {
-                    mStatusReporter.setText("Connection Status: Connecting...");
+                    mStatusReporter.setText("Connecting...");
 
                 } else if (status == AWSIotMqttClientStatus.Connected) {
-                    mStatusReporter.setText("Connection Status: Connected!");
+                    mStatusReporter.setText("Connected!");
 
                 } else if (status == AWSIotMqttClientStatus.Reconnecting) {
                     if (throwable != null) {
                         Utils.logE(LOG_TAG, "Connection error." + throwable);
                     }
-                    mStatusReporter.setText("Connection Status: Reconnecting");
+                    mStatusReporter.setText("Reconnecting");
                 } else if (status == AWSIotMqttClientStatus.ConnectionLost) {
                     if (throwable != null) {
                         Utils.logE(LOG_TAG, "Connection error." + throwable);
                         throwable.printStackTrace();
                     }
-                    mStatusReporter.setText("Connection Status: Disconnected");
+                    mStatusReporter.setText("Disconnected");
                 } else {
-                    mStatusReporter.setText("Connection Status: Disconnected");
-
+                    mStatusReporter.setText("Not Connected!");
                 }
             }
         });
