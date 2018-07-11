@@ -279,7 +279,6 @@ public class MainActivity extends AppCompatActivity implements
                 msg = sensorNames.get(moduleType) + ": X = " + x + ", Y = " + y + ", Z = " + z;
                 try {
                     JSONObject readings = new JSONObject();
-//                    readings.put("type", sensorNames.get(moduleType));
                     readings.put("x", x);
                     readings.put("y", y);
                     readings.put("z", z);
@@ -305,12 +304,21 @@ public class MainActivity extends AppCompatActivity implements
                 ((TextView) findViewById(R.id.value_y_gyro)).setText(String.format("Y  = %.20f", (y = gyroData.getY())));
                 ((TextView) findViewById(R.id.value_z_gyro)).setText(String.format("Z  = %.20f", (z = gyroData.getZ())));
                 try {
+                    JSONObject readings = new JSONObject();
+                    readings.put("x", x);
+                    readings.put("y", y);
+                    readings.put("z", z);
+
                     JSONObject jo = new JSONObject();
-                    jo.put("type", sensorNames.get(moduleType));
-                    jo.put("x", x);
-                    jo.put("y", y);
-                    jo.put("z", z);
-                    msg = jo.toString();
+                    jo.put(sensorNames.get(moduleType), readings);
+
+                    JSONObject desired = new JSONObject();
+                    desired.put("desired", jo);
+
+                    JSONObject state = new JSONObject();
+                    state.put("state", desired);
+
+                    msg = state.toString();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -322,12 +330,21 @@ public class MainActivity extends AppCompatActivity implements
                 ((TextView) findViewById(R.id.value_y_gps)).setText(String.format("Lat  = %.20f", (y = gpsData.getLocation().getLatitude())));
                 ((TextView) findViewById(R.id.value_z_gps)).setText(String.format("Alt  = %.20f", (z = gpsData.getLocation().getAltitude())));
                 try {
+                    JSONObject readings = new JSONObject();
+                    readings.put("longitude", x);
+                    readings.put("latitude", y);
+                    readings.put("altitude", z);
+
                     JSONObject jo = new JSONObject();
-                    jo.put("type", sensorNames.get(moduleType));
-                    jo.put("longitude", x);
-                    jo.put("latitude", y);
-                    jo.put("altitude", z);
-                    msg = jo.toString();
+                    jo.put(sensorNames.get(moduleType), readings);
+
+                    JSONObject desired = new JSONObject();
+                    desired.put("desired", jo);
+
+                    JSONObject state = new JSONObject();
+                    state.put("state", desired);
+
+                    msg = state.toString();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -337,17 +354,31 @@ public class MainActivity extends AppCompatActivity implements
                 SKRotationData rotationData = (SKRotationData) sensorData;
                 ((TextView) findViewById(R.id.value_x_rotation)).setText(String.format("X  = %.20f", (x = rotationData.getX())));
                 ((TextView) findViewById(R.id.value_y_rotation)).setText(String.format("Y  = %.20f", (y = rotationData.getY())));
-                ((TextView) findViewById(R.id.value_w_rotation)).setText(String.format("Z  = %.20f", (z = rotationData.getZ())));
-                ((TextView) findViewById(R.id.value_w_rotation)).setText(String.format("W  = %.20f", (w = rotationData.getCos())));
+                ((TextView) findViewById(R.id.value_z_rotation)).setText(String.format("Z  = %.20f", (z = rotationData.getZ())));
+
+                w = rotationData.getCos();
+                if(w == 0) {
+                    w = getRotationScalarComponent(x,y,z);
+                }
+                ((TextView) findViewById(R.id.value_w_rotation)).setText(String.format("W  = %.20f", w));
 
                 try {
+                    JSONObject readings = new JSONObject();
+                    readings.put("x", x);
+                    readings.put("y", y);
+                    readings.put("z", z);
+                    readings.put("w", w);
+
                     JSONObject jo = new JSONObject();
-                    jo.put("type", sensorNames.get(moduleType));
-                    jo.put("x", x);
-                    jo.put("y", y);
-                    jo.put("z", z);
-                    jo.put("cos", w);
-                    msg = jo.toString();
+                    jo.put(sensorNames.get(moduleType), readings);
+
+                    JSONObject desired = new JSONObject();
+                    desired.put("desired", jo);
+
+                    JSONObject state = new JSONObject();
+                    state.put("state", desired);
+
+                    msg = state.toString();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -373,7 +404,7 @@ public class MainActivity extends AppCompatActivity implements
                     JSONObject state = new JSONObject();
                     state.put("state", desired);
 
-                    msg = jo.toString();
+                    msg = state.toString();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -387,6 +418,16 @@ public class MainActivity extends AppCompatActivity implements
                 mPublishManager.publishToAwsIoT(msg);
             }
         }
+    }
+
+    private double getRotationScalarComponent(double x, double y, double z) {
+        /*
+            x=X/sin(θ/2)
+            y=...
+            z=...
+            θ=arcsin(sqrt(X^2+Y^2+Z^2))*2
+        */
+        return Math.asin(Math.sqrt(x*x + y*y + z*z)) * 2;
     }
 
 }
