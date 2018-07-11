@@ -24,7 +24,8 @@ You will see a notification at the top. Click "Choose this banner to return to t
 Click the blinking "Integrate" button. It will prepare a new cloud config file with new settings. So click "Download config file" and save it.
 Click "Next" and then "Done"
 
-3. Create Cognito Identity Pool
+3. DONOT DO THIS – This step is auto done -
+Create Cognito Identity Pool
 Go to http://ap-southeast-1.console.aws.amazon.com
 Choose "Services > Security, Identity & Compliance > Cognito"
 Click "Manage Identity Pools"

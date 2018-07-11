@@ -38,7 +38,7 @@ public class MqttPublishManager {
     // Cognito pool ID
 //    public static final String COGNITO_POOL_ID = "ap-southeast-1:089b5c41-6644-44e3-a2db-5d9ae54703aa"; // first project
 //    public static final String COGNITO_POOL_ID = "ap-southeast-1:92a952b7-baf7-4be9-9dc2-4db9dfcd828c"; // third project
-    public static final String COGNITO_POOL_ID = "ap-southeast-1:85ea1df1-d0b7-43fe-bc2c-4f6ab690d12e"; // tom
+    public static final String COGNITO_POOL_ID = "ap-southeast-1:8267e1a6-d198-4c7c-acff-f05f284c4181"; // tom
 
     // Region of AWS IoT
     public static final Regions MY_REGION = Regions.AP_SOUTHEAST_1;
@@ -71,11 +71,12 @@ public class MqttPublishManager {
         this.credentialsProvider = cp;
     }
 
-    public void connectToAWS() {
+    public void connectToAWS(CognitoCachingCredentialsProvider cp) {
         Utils.logE(LOG_TAG, "clientId = " + clientId);
+        Utils.logE(LOG_TAG, "Credential provider = " + cp.getIdentityId());
         mqttManager = new AWSIotMqttManager(clientId, CUSTOMER_SPECIFIC_ENDPOINT);
         try {
-            mqttManager.connect(credentialsProvider, mAwsIoTConnectionStatusCallback);
+            mqttManager.connect(cp, mAwsIoTConnectionStatusCallback);
         } catch (final Exception e) {
             Utils.logE(LOG_TAG, "Connection error." + e);
             mAwsIoTConnectionStatusCallback.reportStatus("Error! " + e.getMessage());
@@ -83,7 +84,7 @@ public class MqttPublishManager {
     }
 
     public void publishToAwsIoT(String msg) {
-        final String topic = "aws/things/controllerBox/shadow/update";
+        final String topic = "$aws/things/controllerBox/shadow/update";
         try {
             mqttManager.publishString(msg, topic, AWSIotMqttQos.QOS0);
         } catch (Exception e) {

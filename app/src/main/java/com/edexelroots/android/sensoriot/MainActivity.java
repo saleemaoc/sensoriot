@@ -278,12 +278,22 @@ public class MainActivity extends AppCompatActivity implements
                 ((TextView) findViewById(R.id.value_z_accelerometer)).setText(String.format("Z  = %.20f", ((z = accelerometerData.getZ()))));
                 msg = sensorNames.get(moduleType) + ": X = " + x + ", Y = " + y + ", Z = " + z;
                 try {
+                    JSONObject readings = new JSONObject();
+//                    readings.put("type", sensorNames.get(moduleType));
+                    readings.put("x", x);
+                    readings.put("y", y);
+                    readings.put("z", z);
+
                     JSONObject jo = new JSONObject();
-                    jo.put("type", sensorNames.get(moduleType));
-                    jo.put("x", x);
-                    jo.put("y", y);
-                    jo.put("z", z);
-                    msg = jo.toString();
+                    jo.put(sensorNames.get(moduleType), readings);
+
+                    JSONObject desired = new JSONObject();
+                    desired.put("desired", jo);
+
+                    JSONObject state = new JSONObject();
+                    state.put("state", desired);
+
+                    msg = state.toString();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -349,11 +359,20 @@ public class MainActivity extends AppCompatActivity implements
                 ((TextView) findViewById(R.id.value_y_orientation)).setText(String.format("Y  = %.20f", (y = orientationData.getY())));
                 ((TextView) findViewById(R.id.value_z_orientation)).setText(String.format("Z  = %.20f", (z = orientationData.getZ())));
                 try {
+                    JSONObject readings = new JSONObject();
+                    readings.put("x", x);
+                    readings.put("y", y);
+                    readings.put("z", z);
+
                     JSONObject jo = new JSONObject();
-                    jo.put("type", sensorNames.get(moduleType));
-                    jo.put("x", x);
-                    jo.put("y", y);
-                    jo.put("z", z);
+                    jo.put(sensorNames.get(moduleType), readings);
+
+                    JSONObject desired = new JSONObject();
+                    desired.put("desired", jo);
+
+                    JSONObject state = new JSONObject();
+                    state.put("state", desired);
+
                     msg = jo.toString();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -371,3 +390,27 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 }
+/*
+{
+    "state":{
+        "reported":{
+            "rotation": {
+                "x":1,
+                "y":1,
+                "z":0,
+                "w":0
+            },
+            "accelerometer":{
+                "x":1,
+                "y":1,
+                "z":0
+            },
+            "gyroscope":{
+                "x":1,
+                "y":1,
+                "z":0
+            }
+        }
+    }
+}
+*/
