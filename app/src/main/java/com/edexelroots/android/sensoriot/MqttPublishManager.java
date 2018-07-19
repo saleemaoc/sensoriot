@@ -32,23 +32,22 @@ public class MqttPublishManager {
     static final String LOG_TAG = MqttPublishManager.class.getCanonicalName();
 
     // Customer specific IoT endpoint -- use aws iot describe-endpoint
-//    private static final String CUSTOMER_SPECIFIC_ENDPOINT = "a6mohze0r9216.iot.ap-southeast-1.amazonaws.com";
     private static final String CUSTOMER_SPECIFIC_ENDPOINT = "a2j4ibv1tgowau.iot.ap-southeast-1.amazonaws.com"; // tom
+    // private static final String CUSTOMER_SPECIFIC_ENDPOINT = "a6mohze0r9216.iot.ap-southeast-1.amazonaws.com"; // saleem
 
     // Cognito pool ID
-//    public static final String COGNITO_POOL_ID = "ap-southeast-1:089b5c41-6644-44e3-a2db-5d9ae54703aa"; // first project
-//    public static final String COGNITO_POOL_ID = "ap-southeast-1:92a952b7-baf7-4be9-9dc2-4db9dfcd828c"; // third project
     public static final String COGNITO_POOL_ID = "ap-southeast-1:8267e1a6-d198-4c7c-acff-f05f284c4181"; // tom
+    // public static final String COGNITO_POOL_ID = "ap-southeast-1:4b756572-0949-448f-b35e-49ec0cb7ef12"; // saleem
 
     // Region of AWS IoT
     public static final Regions MY_REGION = Regions.AP_SOUTHEAST_1;
 
-    //    String userPoolId = "ap-southeast-1_EnF2okBJS";
-//    public static String userPoolId = "ap-southeast-1_FxJmL7BJM";
-    public static String userPoolId = "ap-southeast-1_PVcTZSD5R";
-    // String policyName = "policy1";
-    // public static String policyName = "policy2";
-    public static String policyName = "iot_device";
+    // String userPoolId = "ap-southeast-1_EnF2okBJS";
+    public static String userPoolId = "ap-southeast-1_FxJmL7BJM"; // tom
+    // public static String userPoolId = "ap-southeast-1_jlOyFrVuD"; //saleem
+
+    public static String policyName = "iot_device"; //tom
+    // public static String policyName = "policy_s1"; // saleem
 
 
     AWSIotMqttManager mqttManager;

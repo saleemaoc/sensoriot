@@ -4,11 +4,9 @@ package com.edexelroots.android.sensoriot;
 import android.content.Context;
 import android.os.AsyncTask;
 
-import com.amazonaws.auth.AWSSessionCredentials;
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.cognitoidentity.model.NotAuthorizedException;
 import com.amazonaws.services.iot.AWSIotClient;
 import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 
@@ -40,30 +38,14 @@ public class CredentialProvider extends AsyncTask<String, Void, Void> {
             mIotAndroidClient.setRegion(Region.getRegion(Regions.AP_SOUTHEAST_1));
             mIotAndroidClient.attachPrincipalPolicy(policyRequest);
 
-            // AWSSessionCredentials sessionCredentials = credentialsProvider.getCredentials();
             Map<String, String> logins = new HashMap<>();
             Utils.logE(getClass().getName(), "jwt token; " + args[0]);
             logins.put("cognito-idp.ap-southeast-1.amazonaws.com/" + MqttPublishManager.userPoolId, args[0]);
-//            logins.put("www.amazon.com", args[0]);
 
             credentialsProvider.setLogins(logins);
             credentialsProvider.refresh();
 
             mqttPublishManager.setCredentialsProvider(credentialsProvider);
-/*
-
-        } catch (NotAuthorizedException nae) {
-            nae.printStackTrace();
-            Map<String, String> logins = new HashMap<>();
-            Utils.logE(getClass().getName(), "jwt token; " + args[0]);
-            logins.put("cognito-idp.ap-southeast-1.amazonaws.com/" + MqttPublishManager.userPoolId, args[0]);
-//            logins.put("www.amazon.com", args[0]);
-
-            credentialsProvider.setLogins(logins);
-            credentialsProvider.refresh();
-
-            mqttPublishManager.setCredentialsProvider(credentialsProvider);
-*/
 
         } catch (Exception e) {
             this.exception = e;

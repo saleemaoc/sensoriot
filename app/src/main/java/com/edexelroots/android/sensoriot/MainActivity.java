@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -170,10 +171,10 @@ public class MainActivity extends AppCompatActivity implements
     }
     protected void registerSensor(SKSensorModuleType sensorModuleType) {
         try {
-            if(!mSensingKitLib.isSensorModuleRegistered(sensorModuleType)) {
+//            if(!mSensingKitLib.isSensorModuleRegistered(sensorModuleType)) {
                 mSensingKitLib.registerSensorModule(sensorModuleType);
                 mSensingKitLib.subscribeSensorDataListener(sensorModuleType, this);
-            }
+//            }
         } catch (SKException e) {
             e.printStackTrace();
         } catch (NoClassDefFoundError ncdf) {
@@ -212,6 +213,12 @@ public class MainActivity extends AppCompatActivity implements
             e.printStackTrace();
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    protected void onPause() {
+        mPublishToAWSIoT = false;
+        super.onPause();
     }
 
     @Override
@@ -286,11 +293,11 @@ public class MainActivity extends AppCompatActivity implements
                     JSONObject jo = new JSONObject();
                     jo.put(sensorNames.get(moduleType), readings);
 
-                    JSONObject desired = new JSONObject();
-                    desired.put("desired", jo);
+                    JSONObject reported = new JSONObject();
+                    reported.put("reported", jo);
 
                     JSONObject state = new JSONObject();
-                    state.put("state", desired);
+                    state.put("state", reported);
 
                     msg = state.toString();
                 } catch (Exception e) {
@@ -312,11 +319,11 @@ public class MainActivity extends AppCompatActivity implements
                     JSONObject jo = new JSONObject();
                     jo.put(sensorNames.get(moduleType), readings);
 
-                    JSONObject desired = new JSONObject();
-                    desired.put("desired", jo);
+                    JSONObject reported = new JSONObject();
+                    reported.put("reported", jo);
 
                     JSONObject state = new JSONObject();
-                    state.put("state", desired);
+                    state.put("state", reported);
 
                     msg = state.toString();
                 } catch (Exception e) {
@@ -338,11 +345,11 @@ public class MainActivity extends AppCompatActivity implements
                     JSONObject jo = new JSONObject();
                     jo.put(sensorNames.get(moduleType), readings);
 
-                    JSONObject desired = new JSONObject();
-                    desired.put("desired", jo);
+                    JSONObject reported = new JSONObject();
+                    reported.put("reported", jo);
 
                     JSONObject state = new JSONObject();
-                    state.put("state", desired);
+                    state.put("state", reported);
 
                     msg = state.toString();
                 } catch (Exception e) {
@@ -355,6 +362,8 @@ public class MainActivity extends AppCompatActivity implements
                 ((TextView) findViewById(R.id.value_x_rotation)).setText(String.format("X  = %.20f", (x = rotationData.getX())));
                 ((TextView) findViewById(R.id.value_y_rotation)).setText(String.format("Y  = %.20f", (y = rotationData.getY())));
                 ((TextView) findViewById(R.id.value_z_rotation)).setText(String.format("Z  = %.20f", (z = rotationData.getZ())));
+
+                // float[] result = rotationVectorAction(new float[]{(float) x, (float) y, (float) z});
 
                 w = rotationData.getCos();
                 if(w == 0) {
@@ -372,11 +381,11 @@ public class MainActivity extends AppCompatActivity implements
                     JSONObject jo = new JSONObject();
                     jo.put(sensorNames.get(moduleType), readings);
 
-                    JSONObject desired = new JSONObject();
-                    desired.put("desired", jo);
+                    JSONObject reported = new JSONObject();
+                    reported.put("reported", jo);
 
                     JSONObject state = new JSONObject();
-                    state.put("state", desired);
+                    state.put("state", reported);
 
                     msg = state.toString();
                 } catch (Exception e) {
@@ -398,11 +407,11 @@ public class MainActivity extends AppCompatActivity implements
                     JSONObject jo = new JSONObject();
                     jo.put(sensorNames.get(moduleType), readings);
 
-                    JSONObject desired = new JSONObject();
-                    desired.put("desired", jo);
+                    JSONObject reported = new JSONObject();
+                    reported.put("reported", jo);
 
                     JSONObject state = new JSONObject();
-                    state.put("state", desired);
+                    state.put("state", reported);
 
                     msg = state.toString();
                 } catch (Exception e) {
@@ -420,14 +429,22 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    private float[] rotationVectorAction(float[] values) {
+        float[] result = new float[3];
+        float vec[] = values;
+        float[] orientation = new float[3];
+        float[] rotMat = new float[9];
+        SensorManager.getRotationMatrixFromVector(rotMat, vec);
+        SensorManager.getOrientation(rotMat, orientation);
+        result[0] = (float) orientation[0]; // Yaw
+        result[1] = (float) orientation[1]; // Pitch
+        result[2] = (float) orientation[2]; // Roll
+        return result;
+    }
+
     private double getRotationScalarComponent(double x, double y, double z) {
-        /*
-            x=X/sin(θ/2)
-            y=...
-            z=...
-            θ=arcsin(sqrt(X^2+Y^2+Z^2))*2
-        */
-        return Math.asin(Math.sqrt(x*x + y*y + z*z)) * 2;
+        //return Math.acos(Math.sqrt(x*x + y*y + z*z)) * 2;
+        return Math.sqrt(x*x + y*y + z*z);
     }
 
 }
