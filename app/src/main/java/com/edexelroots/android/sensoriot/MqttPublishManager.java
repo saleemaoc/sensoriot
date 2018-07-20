@@ -33,21 +33,12 @@ public class MqttPublishManager {
 
     // Customer specific IoT endpoint -- use aws iot describe-endpoint
     private static final String CUSTOMER_SPECIFIC_ENDPOINT = "a2j4ibv1tgowau.iot.ap-southeast-1.amazonaws.com"; // tom
-    // private static final String CUSTOMER_SPECIFIC_ENDPOINT = "a6mohze0r9216.iot.ap-southeast-1.amazonaws.com"; // saleem
-
-    // Cognito pool ID
     public static final String COGNITO_POOL_ID = "ap-southeast-1:8267e1a6-d198-4c7c-acff-f05f284c4181"; // tom
-    // public static final String COGNITO_POOL_ID = "ap-southeast-1:4b756572-0949-448f-b35e-49ec0cb7ef12"; // saleem
+    public static String USER_POOL_ID = "ap-southeast-1_PVcTZSD5R"; // tom
+    public static String policyName = "iot_device"; //tom
 
     // Region of AWS IoT
     public static final Regions MY_REGION = Regions.AP_SOUTHEAST_1;
-
-    // String userPoolId = "ap-southeast-1_EnF2okBJS";
-    public static String userPoolId = "ap-southeast-1_FxJmL7BJM"; // tom
-    // public static String userPoolId = "ap-southeast-1_jlOyFrVuD"; //saleem
-
-    public static String policyName = "iot_device"; //tom
-    // public static String policyName = "policy_s1"; // saleem
 
 
     AWSIotMqttManager mqttManager;
@@ -122,7 +113,6 @@ public class MqttPublishManager {
             identityManager.getUserID(new IdentityHandler() {
                 @Override
                 public void onIdentityId(String identityId) {
-                    //Utils.logE(getClass().getName(), "identity id: " + identityId);
                     new CredentialProvider(MqttPublishManager.this, mContext).execute(idToken, identityId);
                 }
 
