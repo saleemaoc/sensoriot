@@ -10,13 +10,18 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
@@ -24,33 +29,18 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-/*
-import com.ubhave.sensormanager.ESException;
-import com.ubhave.sensormanager.ESSensorManager;
-import com.ubhave.sensormanager.SensorDataListener;
-import com.ubhave.sensormanager.data.SensorData;
-import com.ubhave.sensormanager.sensors.SensorInterface;
-import com.ubhave.sensormanager.sensors.SensorUtils;
-*/
-
-import com.amazonaws.auth.AWSIdentityProvider;
-import com.amazonaws.auth.AWSSessionCredentials;
-import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobile.auth.core.DefaultSignInResultHandler;
 import com.amazonaws.mobile.auth.core.IdentityManager;
 import com.amazonaws.mobile.auth.core.IdentityProvider;
-import com.amazonaws.mobile.auth.core.SignInResultHandler;
 import com.amazonaws.mobile.auth.ui.AuthUIConfiguration;
+import com.amazonaws.mobile.auth.ui.SignInActivity;
 import com.amazonaws.mobile.auth.ui.SignInUI;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
 import com.amazonaws.mobile.client.AWSStartupResult;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoDevice;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserSession;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationContinuation;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ChallengeContinuation;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.MultiFactorAuthenticationContinuation;
-import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
+import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
+import com.edexelroots.android.sensoriot.kinesis.fragments.StreamConfigurationFragment;
+import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
 
 import org.json.JSONObject;
 import org.sensingkit.sensingkitlib.SKException;
@@ -64,10 +54,8 @@ import org.sensingkit.sensingkitlib.data.SKLocationData;
 import org.sensingkit.sensingkitlib.data.SKMagnetometerData;
 import org.sensingkit.sensingkitlib.data.SKRotationData;
 import org.sensingkit.sensingkitlib.data.SKSensorData;
-import org.sensingkit.sensingkitlib.modules.SKLocation;
 
 import java.util.HashMap;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements
         CompoundButton.OnCheckedChangeListener,
@@ -120,14 +108,16 @@ public class MainActivity extends AppCompatActivity implements
         CheckBox checkOrientation = findViewById(R.id.check_orientation);
 
         CheckBox checkPublishToAWS = findViewById(R.id.check_publish_iot);
-        this.mPublishToAWSIoT = checkPublishToAWS.isChecked();
+        if(checkPublishToAWS != null) {
+            this.mPublishToAWSIoT = checkPublishToAWS.isChecked();
 
-        checkPublishToAWS.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                mPublishToAWSIoT = b;
-            }
-        });
+            checkPublishToAWS.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                    mPublishToAWSIoT = b;
+                }
+            });
+        }
 
         checkAccelero.setOnCheckedChangeListener(this);
         checkGyro.setOnCheckedChangeListener(this);
@@ -468,9 +458,40 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        return false;
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+
+        int id = item.getItemId();
+        if(id == R.id.nav_camera) {
+            // show record screen
+            Intent i = new Intent(this, KinesisActivity.class);
+            startActivity(i);
+        } else if(id == R.id.nav_logout) {
+            // logout the user
+            IdentityManager.getDefaultIdentityManager().signOut();
+            IdentityManager.getDefaultIdentityManager().login(this, new DefaultSignInResultHandler() {
+                @Override
+                public void onSuccess(Activity callingActivity, IdentityProvider provider) {
+                    // startConfigFragment();
+                    // Toast.makeText(callingActivity.getApplicationContext(), "", Toast.LENGTH_SHORT).show();
+                    Intent i = new Intent(MainActivity.this, KinesisActivity.class);
+                    startActivity(i);
+                }
+
+                @Override
+                public boolean onCancel(Activity callingActivity) {
+                    return false;
+                }
+            });
+            SignInActivity.startSignInActivity(this, new AuthUIConfiguration.Builder().userPools(true).build());
+        }
+
+        return true;
     }
+
+
 }
+
 /*
 {
     "state":{

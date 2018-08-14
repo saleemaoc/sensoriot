@@ -13,8 +13,7 @@
     </style>
 
 
-    <style name="MainActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
-    </style>
+    <style name="MainActionBar" parent="@android:style/Widget.Holo.Light.ActionBar"></style>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
