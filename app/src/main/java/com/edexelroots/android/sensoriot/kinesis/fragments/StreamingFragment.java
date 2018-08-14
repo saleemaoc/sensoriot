@@ -73,7 +73,9 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             resumeStreaming();
         } catch (final KinesisVideoException e) {
             Log.e(TAG, "unable to start streaming");
-            throw new RuntimeException("unable to start streaming", e);
+            // throw new RuntimeException("unable to start streaming", e)
+            Toast.makeText(getContext(), "Unable to start streaming!!", Toast.LENGTH_SHORT).show();
+            getActivity().finish();
         }
     }
 

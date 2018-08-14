@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -39,6 +40,7 @@ import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
 import com.amazonaws.mobile.client.AWSStartupResult;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
+import com.edexelroots.android.sensoriot.kinesis.fragments.SensorFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamConfigurationFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
 
@@ -58,10 +60,15 @@ import org.sensingkit.sensingkitlib.data.SKSensorData;
 import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements
+/*
         CompoundButton.OnCheckedChangeListener,
+        SKSensorDataListener,
+*/
         NavigationView.OnNavigationItemSelectedListener,
-        SKSensorDataListener {
+        SensorFragment.OnFragmentInteractionListener
+    {
 
+/*
     SKSensorModuleType[] sensors = {
             SKSensorModuleType.ACCELEROMETER,
             SKSensorModuleType.GYROSCOPE,
@@ -77,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements
     MqttPublishManager mPublishManager = null;
     AWSIoTConnectionStatus mConnectionStatus = null;
     SensingKitLibInterface mSensingKitLib;
+*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+/*
         sensorNames.put(SKSensorModuleType.ACCELEROMETER, "Accelerometer");
         sensorNames.put(SKSensorModuleType.GYROSCOPE, "Gyroscope");
         sensorNames.put(SKSensorModuleType.LOCATION, "Location");
@@ -137,14 +146,18 @@ public class MainActivity extends AppCompatActivity implements
 
         checkPerms();
         signInAWSCognito();
+*/
     }
+/*
 
     public void checkPerms() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             // Permission is not granted, Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(this,  Manifest.permission.ACCESS_FINE_LOCATION)) {
-                /* Show an explanation to the user *asynchronously* -- don't block this thread waiting for the user's response! After the user
-                 sees the explanation, try again to request the permission. */
+                */
+/* Show an explanation to the user *asynchronously* -- don't block this thread waiting for the user's response! After the user
+                 sees the explanation, try again to request the permission. *//*
+
             } else {
                 // No explanation needed; request the permission
                 ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_FINE_LOCATION);
@@ -455,6 +468,7 @@ public class MainActivity extends AppCompatActivity implements
         //return Math.acos(Math.sqrt(x*x + y*y + z*z)) * 2;
         return Math.sqrt(x*x + y*y + z*z);
     }
+*/
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -490,7 +504,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
 
-}
+        @Override
+        public void onFragmentInteraction(Uri uri) {
+            // Todo -- anything ?
+        }
+    }
 
 /*
 {

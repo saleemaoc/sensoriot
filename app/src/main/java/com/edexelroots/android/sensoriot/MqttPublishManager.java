@@ -92,7 +92,7 @@ public class MqttPublishManager {
         }
     }
 
-    protected void setupSession() {
+    public void setupSession() {
         final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
         final CognitoUserPool userPool = new CognitoUserPool(mContext, identityManager.getConfiguration());
         userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(identityManager));

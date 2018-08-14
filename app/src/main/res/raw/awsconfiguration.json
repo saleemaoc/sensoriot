@@ -1,28 +1,4 @@
 {
-  "Version": "1.0",
-  "CredentialsProvider": {
-    "CognitoIdentity": {
-      "Default": {
-        "PoolId": "us-west-2:0b7df13f-eeab-4be8-8e6f-322e5cc7050f",
-        "Region": "us-west-2"
-      }
-    }
-  },
-  "IdentityManager": {
-    "Default": {}
-  },
-  "CognitoUserPool": {
-    "Default": {
-      "AppClientSecret": "1vocb5o72crcaicc5i919ilih0m69pre2dlciddd4t467gdmojc0",
-      "AppClientId": "74bjpod24dsnh7kidpiopk1jpq",
-      "PoolId": "us-west-2_4sXf0ljHQ",
-      "Region": "us-west-2"
-    }
-  }
-}
-
-/*
-{
   "UserAgent": "MobileHub/1.0",
   "Version": "1.0",
   "CredentialsProvider": {
@@ -55,4 +31,4 @@
       "Region": "us-east-1"
     }
   }
-}*/
+}
