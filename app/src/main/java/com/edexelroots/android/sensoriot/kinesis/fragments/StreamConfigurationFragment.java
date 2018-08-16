@@ -128,6 +128,7 @@ public class StreamConfigurationFragment extends Fragment {
         mStartStreamingButton = (Button) view.findViewById(R.id.start_streaming);
         mStartStreamingButton.setOnClickListener(startStreamingActivityWhenClicked());
         mStreamName = (EditText) view.findViewById(R.id.stream_name);
+        mStreamName.setText(StreamingFragment.KEY_STREAM_NAME);
     }
 
     private View.OnClickListener startStreamingActivityWhenClicked() {

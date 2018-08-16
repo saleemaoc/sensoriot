@@ -25,7 +25,8 @@ import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 public class StreamingFragment extends Fragment implements TextureView.SurfaceTextureListener {
     public static final String KEY_MEDIA_SOURCE_CONFIGURATION = "mediaSourceConfiguration";
 //    public static final String KEY_STREAM_NAME = "streamName";
-    public static final String KEY_STREAM_NAME = "kinesis_live";
+//    public static final String KEY_STREAM_NAME = "kinesis_live";
+    public static final String KEY_STREAM_NAME = "liverekprototype"; // tom
 
     private static final String TAG = StreamingFragment.class.getSimpleName();
 
@@ -72,9 +73,9 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
 
             resumeStreaming();
         } catch (final KinesisVideoException e) {
-            Log.e(TAG, "unable to start streaming");
+            Log.e(TAG, "unable to start streaming\n" + e.getMessage());
             // throw new RuntimeException("unable to start streaming", e)
-            Toast.makeText(getContext(), "Unable to start streaming!!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Unable to start streaming!!\n" + e.getMessage(), Toast.LENGTH_SHORT).show();
             getActivity().finish();
         }
     }
