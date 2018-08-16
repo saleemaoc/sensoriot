@@ -24,7 +24,6 @@ import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 
 public class StreamingFragment extends Fragment implements TextureView.SurfaceTextureListener {
     public static final String KEY_MEDIA_SOURCE_CONFIGURATION = "mediaSourceConfiguration";
-//    public static final String KEY_STREAM_NAME = "streamName";
 //    public static final String KEY_STREAM_NAME = "kinesis_live";
     public static final String KEY_STREAM_NAME = "liverekprototype"; // tom
 
