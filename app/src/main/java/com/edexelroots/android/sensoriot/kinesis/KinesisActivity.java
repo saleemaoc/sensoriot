@@ -32,7 +32,6 @@ public class KinesisActivity extends AppCompatActivity {
     }
 
     public  void startStreamingFragment(Bundle extras) {
-        // Todo
         try {
             StreamingFragment f = StreamingFragment.newInstance(this);
             f.setArguments(extras);

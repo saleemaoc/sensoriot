@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SensorIoTApp extends Application {
-    public static Regions KINESIS_VIDEO_REGION = Regions.US_WEST_2;
+    public static Regions KINESIS_VIDEO_REGION = Regions.AP_NORTHEAST_1;
 
     @Override
     public void onCreate() {

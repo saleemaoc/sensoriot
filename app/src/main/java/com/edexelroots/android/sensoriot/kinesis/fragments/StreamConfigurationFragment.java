@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.amazonaws.kinesisvideo.client.KinesisVideoClient;
 import com.amazonaws.kinesisvideo.client.mediasource.CameraMediaSourceConfiguration;
@@ -24,6 +25,7 @@ import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCa
 import com.edexelroots.android.sensoriot.SensorIoTApp;
 import com.edexelroots.android.sensoriot.MainActivity;
 import com.edexelroots.android.sensoriot.R;
+import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 import com.edexelroots.android.sensoriot.kinesis.ui.adapter.ToStrings;
 import com.edexelroots.android.sensoriot.kinesis.ui.widget.StringSpinnerWidget;
@@ -34,7 +36,8 @@ import static com.amazonaws.mobileconnectors.kinesisvideo.util.VideoEncoderUtils
 
 public class StreamConfigurationFragment extends Fragment {
     private static final String TAG = StreamConfigurationFragment.class.getSimpleName();
-    private static final Size RESOLUTION_320x240 = new Size(320, 240);
+//    private static final Size RESOLUTION_320x240 = new Size(320, 240);
+    private static final Size RESOLUTION_320x240 = new Size(240, 320);
     private static final int FRAMERATE_20 = 20;
     private static final int BITRATE_384_KBPS = 384 * 1024;
     private static final int RETENTION_PERIOD_48_HOURS = 2 * 24;
@@ -74,6 +77,9 @@ public class StreamConfigurationFragment extends Fragment {
                     SensorIoTApp.getCredentialsProvider());
         } catch (KinesisVideoException e) {
             Log.e(TAG, "Failed to create Kinesis Video client", e);
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "An error occurred! " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            Utils.logE(getClass().getName(), e.getMessage());
         }
 
         mCamerasDropdown = new StringSpinnerWidget<>(
@@ -167,7 +173,7 @@ public class StreamConfigurationFragment extends Fragment {
                         .withFrameRate(FRAMERATE_20)
                         .withRetentionPeriodInHours(RETENTION_PERIOD_48_HOURS)
                         .withEncodingBitRate(BITRATE_384_KBPS)
-                        .withCameraOrientation(-mCamerasDropdown.getSelectedItem().getCameraOrientation())
+                        .withCameraOrientation(mCamerasDropdown.getSelectedItem().getCameraOrientation())
                         .withNalAdaptationFlags(StreamInfo.NalAdaptationFlags.NAL_ADAPTATION_ANNEXB_CPD_AND_FRAME_NALS)
                         .withIsAbsoluteTimecode(false));
     }

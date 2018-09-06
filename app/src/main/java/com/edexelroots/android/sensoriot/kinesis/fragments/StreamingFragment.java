@@ -1,5 +1,6 @@
 package com.edexelroots.android.sensoriot.kinesis.fragments;
 
+import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -52,7 +53,13 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         mConfiguration = getArguments().getParcelable(KEY_MEDIA_SOURCE_CONFIGURATION);
 
         final View view = inflater.inflate(R.layout.fragment_streaming, container, false);
+        int orientation = getResources().getConfiguration().orientation;
         TextureView textureView = (TextureView) view.findViewById(R.id.texture);
+        if(orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            textureView.setRotation(-90);
+        } else {
+            textureView.setRotation(0);
+        }
         textureView.setSurfaceTextureListener(this);
         return view;
     }
