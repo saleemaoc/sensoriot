@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
@@ -44,6 +45,8 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         return s;
     }
 
+    TextureView mTextureView;
+
     @Override
     public View onCreateView(final LayoutInflater inflater,
                              final ViewGroup container,
@@ -53,15 +56,47 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         mConfiguration = getArguments().getParcelable(KEY_MEDIA_SOURCE_CONFIGURATION);
 
         final View view = inflater.inflate(R.layout.fragment_streaming, container, false);
+        mTextureView = (TextureView) view.findViewById(R.id.texture);
         int orientation = getResources().getConfiguration().orientation;
-        TextureView textureView = (TextureView) view.findViewById(R.id.texture);
         if(orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            textureView.setRotation(-90);
+            Toast.makeText(getContext(), "Landscape",Toast.LENGTH_SHORT ).show();
         } else {
-            textureView.setRotation(0);
+//            view.findViewById(R.id.texture_container).setRotation(90);
+//            mTextureView.setRotation(90);
+            Toast.makeText(getContext(), "Portrait",Toast.LENGTH_SHORT ).show();
         }
-        textureView.setSurfaceTextureListener(this);
+        mTextureView.setSurfaceTextureListener(this);
         return view;
+    }
+
+    private void adjustAspectRatio(int videoWidth, int videoHeight) {
+        int viewWidth = mTextureView.getWidth();
+        int viewHeight = mTextureView.getHeight();
+        double aspectRatio = (double) videoHeight / videoWidth;
+
+        int newWidth, newHeight;
+        if (viewHeight > (int) (viewWidth * aspectRatio)) {
+            // limited by narrow width; restrict height
+            newWidth = viewWidth;
+            newHeight = (int) (viewWidth * aspectRatio);
+        } else {
+            // limited by short height; restrict width
+            newWidth = (int) (viewHeight / aspectRatio);
+            newHeight = viewHeight;
+        }
+        int xoff = (viewWidth - newWidth) / 2;
+        int yoff = (viewHeight - newHeight) / 2;
+        Log.v(TAG, "video=" + videoWidth + "x" + videoHeight +
+                " view=" + viewWidth + "x" + viewHeight +
+                " newView=" + newWidth + "x" + newHeight +
+                " off=" + xoff + "," + yoff);
+
+        android.graphics.Matrix txform = new android.graphics.Matrix();
+        mTextureView.getTransform(txform);
+        txform.setScale((float) newWidth / viewWidth, (float) newHeight / viewHeight);
+        txform.postRotate(45);          // just for fun
+        txform.postTranslate(xoff, yoff);
+        mTextureView.setTransform(txform);
     }
 
     private void createClientAndStartStreaming(final SurfaceTexture previewTexture) {
@@ -75,7 +110,18 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             mCameraMediaSource = (AndroidCameraMediaSource) mKinesisVideoClient
                     .createMediaSource(mStreamName, mConfiguration);
 
-            mCameraMediaSource.setPreviewSurfaces(new Surface(previewTexture));
+//             adjustAspectRatio(200,200);
+
+/*
+            float[] mtx = new float[16];
+            previewTexture.getTransformMatrix(mtx);
+
+            Matrix.rotateM(mtx, 0, 90, 0, 0, 1);
+            Matrix.translateM(mtx, 0, 0, -1, 0);
+*/
+
+            Surface surface = new Surface(previewTexture);
+            mCameraMediaSource.setPreviewSurfaces(surface);
 
             resumeStreaming();
         } catch (final KinesisVideoException e) {

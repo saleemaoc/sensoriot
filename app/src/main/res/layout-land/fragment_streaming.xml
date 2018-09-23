@@ -10,14 +10,12 @@
         android:orientation="vertical">
 
         <TextureView
-            android:layout_toLeftOf="@+id/start_streaming"
+            android:layout_above="@+id/start_streaming"
             android:id="@+id/texture"
-            android:layout_width="match_parent"
-            android:rotation="270"
-            android:layout_height="match_parent"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
-            android:layout_weight="1"/>
+            android:layout_width="300dp"
+            android:layout_height="400dp"
+            android:rotation="-90"
+            />
 
             <Button
                 android:layout_width="wrap_content"
@@ -25,7 +23,7 @@
                 android:id="@+id/start_streaming"
                 android:layout_alignParentBottom="true"
                 android:text="Stream"
-                android:layout_alignParentRight="true"
+                android:layout_centerHorizontal="true"
                 android:padding="10dp"
                 android:background="@drawable/button_selector"
                 android:layout_margin="10dp"/>

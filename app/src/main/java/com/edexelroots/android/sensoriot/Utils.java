@@ -4,7 +4,7 @@ import android.util.Log;
 
 public class Utils {
 
-    public static final boolean IS_RELEASE = true;
+    public static final boolean IS_RELEASE = false;
 
     public static void logE(String tag, String msg) {
         if (IS_RELEASE) {

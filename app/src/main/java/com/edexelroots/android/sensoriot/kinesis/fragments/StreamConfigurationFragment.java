@@ -37,7 +37,7 @@ import static com.amazonaws.mobileconnectors.kinesisvideo.util.VideoEncoderUtils
 public class StreamConfigurationFragment extends Fragment {
     private static final String TAG = StreamConfigurationFragment.class.getSimpleName();
 //    private static final Size RESOLUTION_320x240 = new Size(320, 240);
-    private static final Size RESOLUTION_320x240 = new Size(240, 320);
+    public static final Size RESOLUTION_320x240 = new Size(240, 320);
     private static final int FRAMERATE_20 = 20;
     private static final int BITRATE_384_KBPS = 384 * 1024;
     private static final int RETENTION_PERIOD_48_HOURS = 2 * 24;
@@ -149,32 +149,32 @@ public class StreamConfigurationFragment extends Fragment {
     private void startStreaming() {
         final Bundle extras = new Bundle();
 
-        extras.putParcelable(
-                StreamingFragment.KEY_MEDIA_SOURCE_CONFIGURATION,
-                getCurrentConfiguration());
+        Utils.logE(getClass().getName(), "0 Camera Orientation: " + mCamerasDropdown.getSelectedItem().getCameraOrientation());
 
-        extras.putString(
-                StreamingFragment.KEY_STREAM_NAME,
-                mStreamName.getText().toString());
+        AndroidCameraMediaSourceConfiguration acmsc = getCurrentConfiguration();
+        extras.putParcelable(StreamingFragment.KEY_MEDIA_SOURCE_CONFIGURATION, acmsc);
+        Utils.logE(getClass().getName(), "1 Camera Orientation: " + acmsc.getCameraOrientation());
+
+        extras.putString(StreamingFragment.KEY_STREAM_NAME, mStreamName.getText().toString());
 
         mActivity.startStreamingFragment(extras);
     }
 
     private AndroidCameraMediaSourceConfiguration getCurrentConfiguration() {
-        return new AndroidCameraMediaSourceConfiguration(
-                AndroidCameraMediaSourceConfiguration.builder()
-                        .withCameraId(mCamerasDropdown.getSelectedItem().getCameraId())
-                        .withEncodingMimeType(mMimeTypeDropdown.getSelectedItem().getMimeType())
-                        .withHorizontalResolution(mResolutionDropdown.getSelectedItem().getWidth())
-                        .withVerticalResolution(mResolutionDropdown.getSelectedItem().getHeight())
-                        .withCameraFacing(mCamerasDropdown.getSelectedItem().getCameraFacing())
-                        .withIsEncoderHardwareAccelerated(
-                                mCamerasDropdown.getSelectedItem().isEndcoderHardwareAccelerated())
-                        .withFrameRate(FRAMERATE_20)
-                        .withRetentionPeriodInHours(RETENTION_PERIOD_48_HOURS)
-                        .withEncodingBitRate(BITRATE_384_KBPS)
-                        .withCameraOrientation(mCamerasDropdown.getSelectedItem().getCameraOrientation())
-                        .withNalAdaptationFlags(StreamInfo.NalAdaptationFlags.NAL_ADAPTATION_ANNEXB_CPD_AND_FRAME_NALS)
-                        .withIsAbsoluteTimecode(false));
+        Utils.logE(getClass().getName(), "Camera Orientation: " + mCamerasDropdown.getSelectedItem().getCameraOrientation());
+        CameraMediaSourceConfiguration.Builder builder = AndroidCameraMediaSourceConfiguration.builder()
+                .withCameraId(mCamerasDropdown.getSelectedItem().getCameraId())
+                .withEncodingMimeType(mMimeTypeDropdown.getSelectedItem().getMimeType())
+                .withHorizontalResolution(mResolutionDropdown.getSelectedItem().getWidth())
+                .withVerticalResolution(mResolutionDropdown.getSelectedItem().getHeight())
+                .withCameraFacing(mCamerasDropdown.getSelectedItem().getCameraFacing())
+                .withIsEncoderHardwareAccelerated(mCamerasDropdown.getSelectedItem().isEndcoderHardwareAccelerated())
+                .withFrameRate(FRAMERATE_20)
+                .withRetentionPeriodInHours(RETENTION_PERIOD_48_HOURS)
+                .withEncodingBitRate(BITRATE_384_KBPS)
+                .withCameraOrientation(-mCamerasDropdown.getSelectedItem().getCameraOrientation())
+                .withNalAdaptationFlags(StreamInfo.NalAdaptationFlags.NAL_ADAPTATION_ANNEXB_CPD_AND_FRAME_NALS)
+                .withIsAbsoluteTimecode(false);
+        return new AndroidCameraMediaSourceConfiguration(builder);
     }
 }
