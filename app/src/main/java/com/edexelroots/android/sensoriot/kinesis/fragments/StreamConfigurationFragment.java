@@ -37,7 +37,7 @@ import static com.amazonaws.mobileconnectors.kinesisvideo.util.VideoEncoderUtils
 public class StreamConfigurationFragment extends Fragment {
     private static final String TAG = StreamConfigurationFragment.class.getSimpleName();
 //    private static final Size RESOLUTION_320x240 = new Size(320, 240);
-    public static final Size RESOLUTION_320x240 = new Size(240, 320);
+    public static final Size RESOLUTION_320x240 = new Size(320, 240);
     private static final int FRAMERATE_20 = 20;
     private static final int BITRATE_384_KBPS = 384 * 1024;
     private static final int RETENTION_PERIOD_48_HOURS = 2 * 24;
