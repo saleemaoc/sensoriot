@@ -1,0 +1,92 @@
+$ aws rekognition create-collection --collection-id "linkedin"
+{
+    "CollectionArn": "aws:rekognition:ap-northeast-1:876659712960:collection/linkedin",
+    "FaceModelVersion": "3.0",
+    "StatusCode": 200
+}
+
+----
+
+$ aws rekognition index-faces \
+      --image '{"S3Object":{"Bucket":"facebucket-suaoc","Name":"thomas.jpeg"}}' \
+      --collection-id "linkedin" \
+      --max-faces 1 \
+      --external-image-id "thomas.jpeg"
+{
+    "FaceRecords": [
+        {
+            "FaceDetail": {
+                "BoundingBox": {
+                    "Width": 0.2846153974533081,
+                    "Top": 0.16153846681118011,
+                    "Left": 0.36153846979141235,
+                    "Height": 0.2884615361690521
+                },
+                "Landmarks": [
+                    {
+                        "Y": 0.28771284222602844,
+                        "X": 0.4595396816730499,
+                        "Type": "eyeLeft"
+                    },
+                    {
+                        "Y": 0.2867931127548218,
+                        "X": 0.5617789030075073,
+                        "Type": "eyeRight"
+                    },
+                    {
+                        "Y": 0.33117663860321045,
+                        "X": 0.5110570192337036,
+                        "Type": "nose"
+                    },
+                    {
+                        "Y": 0.38203465938568115,
+                        "X": 0.46744322776794434,
+                        "Type": "mouthLeft"
+                    },
+                    {
+                        "Y": 0.38317108154296875,
+                        "X": 0.548379123210907,
+                        "Type": "mouthRight"
+                    }
+                ],
+                "Pose": {
+                    "Yaw": 3.081303596496582,
+                    "Roll": -0.8757966756820679,
+                    "Pitch": 5.6677775382995605
+                },
+                "Quality": {
+                    "Sharpness": 53.47911071777344,
+                    "Brightness": 78.70207214355469
+                },
+                "Confidence": 99.99568176269531
+            },
+            "Face": {
+                "BoundingBox": {
+                    "Width": 0.2846153974533081,
+                    "Top": 0.16153846681118011,
+                    "Left": 0.36153846979141235,
+                    "Height": 0.2884615361690521
+                },
+                "FaceId": "6a1da24e-52f2-4137-8a80-1ab7991cdfec",
+                "ExternalImageId": "thomas.jpeg",
+                "Confidence": 99.99568176269531,
+                "ImageId": "de1c51d5-0f2b-53c2-8746-c11dd8016336"
+            }
+        }
+    ],
+    "UnindexedFaces": [],
+    "FaceModelVersion": "3.0",
+    "OrientationCorrection": "ROTATE_0"
+}
+
+-----
+$ aws kinesisvideo create-stream --stream-name "facekinesis" --data-retention-in-hours "24"
+{
+    "StreamARN": "arn:aws:kinesisvideo:ap-northeast-1:876659712960:stream/facekinesis/1541933661361"
+}
+-----
+
+kinesis data stream ARN
+arn:aws:kinesis:ap-northeast-1:876659712960:stream/facestream
+
+-----

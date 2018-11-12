@@ -35,12 +35,14 @@ public class CredentialProvider extends AsyncTask<String, Void, Void> {
             policyRequest.setPrincipal(identityId);
             policyRequest.setPolicyName(MqttPublishManager.policyName);
             AWSIotClient mIotAndroidClient = new AWSIotClient(credentialsProvider);
-            mIotAndroidClient.setRegion(Region.getRegion(Regions.AP_SOUTHEAST_1));
+//            mIotAndroidClient.setRegion(Region.getRegion(Regions.AP_SOUTHEAST_1));
+            mIotAndroidClient.setRegion(Region.getRegion(MqttPublishManager.MY_REGION));
             mIotAndroidClient.attachPrincipalPolicy(policyRequest);
 
             Map<String, String> logins = new HashMap<>();
             Utils.logE(getClass().getName(), "jwt token; " + args[0]);
-            logins.put("cognito-idp.ap-southeast-1.amazonaws.com/" + MqttPublishManager.USER_POOL_ID, args[0]);
+//            logins.put("cognito-idp.ap-southeast-1.amazonaws.com/" + MqttPublishManager.USER_POOL_ID, args[0]);
+            logins.put("cognito-idp.ap-northeast-1.amazonaws.com/" + MqttPublishManager.USER_POOL_ID, args[0]);
 
             credentialsProvider.setLogins(logins);
             credentialsProvider.refresh();
@@ -49,6 +51,7 @@ public class CredentialProvider extends AsyncTask<String, Void, Void> {
 
         } catch (Exception e) {
             this.exception = e;
+            e.printStackTrace();
         } finally {
         }
         return null;

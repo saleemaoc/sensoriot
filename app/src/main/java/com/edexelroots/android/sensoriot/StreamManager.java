@@ -9,6 +9,8 @@ package com.edexelroots.android.sensoriot;
 import android.content.Context;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.rekognition.AmazonRekognition;
 import com.amazonaws.services.rekognition.AmazonRekognitionClient;
 import com.amazonaws.services.rekognition.model.CreateStreamProcessorRequest;
@@ -57,7 +59,8 @@ public class StreamManager {
         matchThreshold=threshold;
         CognitoCachingCredentialsProvider cp = new CognitoCachingCredentialsProvider(c, MqttPublishManager.COGNITO_POOL_ID, MqttPublishManager.MY_REGION);
         rekognitionClient = new AmazonRekognitionClient(cp);
-
+        rekognitionClient.setRegion(Region.getRegion(Regions.AP_NORTHEAST_1));
+        rekognitionClient.setEndpoint("rekognition.ap-northeast-1.amazonaws.com");
     }
 
     public void createStreamProcessor() {
@@ -79,26 +82,27 @@ public class StreamManager {
                         .withSettings(streamProcessorSettings).withRoleArn(roleArn).withName(streamProcessorName));
 
         //Display result
-        System.out.println("Stream Processor " + streamProcessorName + " created.");
-        System.out.println("StreamProcessorArn - " + createStreamProcessorResult.getStreamProcessorArn());
+        Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " created.");
+        Utils.logE(getClass().getName(), "StreamProcessorArn - " + createStreamProcessorResult.getStreamProcessorArn());
     }
 
     public void startStreamProcessor() {
         StartStreamProcessorResult startStreamProcessorResult =
                 rekognitionClient.startStreamProcessor(new StartStreamProcessorRequest().withName(streamProcessorName));
-        System.out.println("Stream Processor " + streamProcessorName + " started.");
+        Utils.logE(getClass(). getName(),"Stream Processor " + streamProcessorName + " started.");
+        Utils.logE(getClass().getName(), startStreamProcessorResult.toString());
     }
 
     public void stopStreamProcessor() {
         StopStreamProcessorResult stopStreamProcessorResult =
                 rekognitionClient.stopStreamProcessor(new StopStreamProcessorRequest().withName(streamProcessorName));
-        System.out.println("Stream Processor " + streamProcessorName + " stopped.");
+        Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " stopped.");
     }
 
     public void deleteStreamProcessor() {
         DeleteStreamProcessorResult deleteStreamProcessorResult = rekognitionClient
                 .deleteStreamProcessor(new DeleteStreamProcessorRequest().withName(streamProcessorName));
-        System.out.println("Stream Processor " + streamProcessorName + " deleted.");
+        Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " deleted.");
     }
 
     public void describeStreamProcessor() {
@@ -106,18 +110,18 @@ public class StreamManager {
                 .describeStreamProcessor(new DescribeStreamProcessorRequest().withName(streamProcessorName));
 
         //Display various stream processor attributes.
-        System.out.println("Arn - " + describeStreamProcessorResult.getStreamProcessorArn());
-        System.out.println("Input kinesisVideo stream - "
+        Utils.logE(getClass().getName(), "Arn - " + describeStreamProcessorResult.getStreamProcessorArn());
+        Utils.logE(getClass().getName(), "Input kinesisVideo stream - "
                 + describeStreamProcessorResult.getInput().getKinesisVideoStream().getArn());
-        System.out.println("Output kinesisData stream - "
+        Utils.logE(getClass().getName(), "Output kinesisData stream - "
                 + describeStreamProcessorResult.getOutput().getKinesisDataStream().getArn());
-        System.out.println("RoleArn - " + describeStreamProcessorResult.getRoleArn());
-        System.out.println(
+        Utils.logE(getClass().getName(), "RoleArn - " + describeStreamProcessorResult.getRoleArn());
+        Utils.logE(getClass().getName(),
                 "CollectionId - " + describeStreamProcessorResult.getSettings().getFaceSearch().getCollectionId());
-        System.out.println("Status - " + describeStreamProcessorResult.getStatus());
-        System.out.println("Status message - " + describeStreamProcessorResult.getStatusMessage());
-        System.out.println("Creation timestamp - " + describeStreamProcessorResult.getCreationTimestamp());
-        System.out.println("Last update timestamp - " + describeStreamProcessorResult.getLastUpdateTimestamp());
+        Utils.logE(getClass().getName(), "Status - " + describeStreamProcessorResult.getStatus());
+        Utils.logE(getClass().getName(), "Status message - " + describeStreamProcessorResult.getStatusMessage());
+        Utils.logE(getClass().getName(), "Creation timestamp - " + describeStreamProcessorResult.getCreationTimestamp());
+        Utils.logE(getClass().getName(), "Last update timestamp - " + describeStreamProcessorResult.getLastUpdateTimestamp());
     }
 
     public void listStreamProcessors() {
@@ -126,8 +130,8 @@ public class StreamManager {
 
         //List all stream processors (and state) returned from Rekognition
         for (StreamProcessor streamProcessor : listStreamProcessorsResult.getStreamProcessors()) {
-            System.out.println("StreamProcessor name - " + streamProcessor.getName());
-            System.out.println("Status - " + streamProcessor.getStatus());
+            Utils.logE(getClass().getName(), "StreamProcessor name - " + streamProcessor.getName());
+            Utils.logE(getClass().getName(), "Status - " + streamProcessor.getStatus());
         }
     }
 }

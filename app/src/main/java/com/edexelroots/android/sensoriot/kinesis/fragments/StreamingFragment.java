@@ -19,15 +19,18 @@ import com.amazonaws.kinesisvideo.common.exception.KinesisVideoException;
 import com.amazonaws.mobileconnectors.kinesisvideo.client.KinesisVideoAndroidClientFactory;
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSource;
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
+import com.edexelroots.android.sensoriot.Constants;
 import com.edexelroots.android.sensoriot.MainActivity;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.SensorIoTApp;
+import com.edexelroots.android.sensoriot.StreamManager;
+import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 
 public class StreamingFragment extends Fragment implements TextureView.SurfaceTextureListener {
     public static final String KEY_MEDIA_SOURCE_CONFIGURATION = "mediaSourceConfiguration";
-//    public static final String KEY_STREAM_NAME = "kinesis_live";
-    public static final String KEY_STREAM_NAME = "liverekprototype"; // tom
+    public static final String KEY_STREAM_NAME = "facekinesis";
+//    public static final String KEY_STREAM_NAME = "liverekprototype"; // tom
 
     private static final String TAG = StreamingFragment.class.getSimpleName();
 
@@ -57,6 +60,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
 
         final View view = inflater.inflate(R.layout.fragment_streaming, container, false);
         mTextureView = (TextureView) view.findViewById(R.id.texture);
+/*
         int orientation = getResources().getConfiguration().orientation;
         if(orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Toast.makeText(getContext(), "Landscape",Toast.LENGTH_SHORT ).show();
@@ -65,6 +69,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
 //            mTextureView.setRotation(90);
             Toast.makeText(getContext(), "Portrait",Toast.LENGTH_SHORT ).show();
         }
+*/
         mTextureView.setSurfaceTextureListener(this);
         return view;
     }
@@ -123,6 +128,16 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             Surface surface = new Surface(previewTexture);
             mCameraMediaSource.setPreviewSurfaces(surface);
 
+            if(sm == null) {
+                sm = new StreamManager(getActivity(),
+                        Constants.Rekognition.streamProcessorName,
+                        Constants.Rekognition.kinesisVideoStreamArn,
+                        Constants.Rekognition.kinesisDataStreamArn,
+                        Constants.Rekognition.roleArn,
+                        Constants.Rekognition.collectionId,
+                        Constants.Rekognition.matchThreshold);
+            }
+
             resumeStreaming();
         } catch (final KinesisVideoException e) {
             Log.e(TAG, "unable to start streaming\n" + e.getMessage());
@@ -165,10 +180,10 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             if (mCameraMediaSource == null) {
                 return;
             }
-
             mCameraMediaSource.start();
             Toast.makeText(getActivity(), "resumed streaming", Toast.LENGTH_SHORT).show();
             mStartStreamingButton.setText(getActivity().getText(R.string.stop_streaming));
+            startRekStreamProcessor();
         } catch (final KinesisVideoException e) {
             Log.e(TAG, "unable to resume streaming", e);
             Toast.makeText(getActivity(), "failed to resume streaming", Toast.LENGTH_SHORT).show();
@@ -181,6 +196,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
                 return;
             }
 
+            stopRekStreamProcessor();
             mCameraMediaSource.stop();
             Toast.makeText(getActivity(), "stopped streaming", Toast.LENGTH_SHORT).show();
             mStartStreamingButton.setText(getActivity().getText(R.string.start_streaming));
@@ -190,6 +206,42 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         }
     }
 
+
+    StreamManager sm = null;
+    private void startRekStreamProcessor() {
+        Utils.logE(getClass().getName(), "Start Rekog processor!!");
+        try {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    sm.createStreamProcessor();
+                    sm.listStreamProcessors();
+                    sm.describeStreamProcessor();
+                    sm.startStreamProcessor();
+                }
+            }).start();
+        }
+        catch(Exception e){
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void stopRekStreamProcessor() {
+        if(sm != null) {
+            try {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        sm.stopStreamProcessor();
+                        sm.deleteStreamProcessor();
+                    }
+                }).start();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
     ////
     // TextureView.SurfaceTextureListener methods
     ////
