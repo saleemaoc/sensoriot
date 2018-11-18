@@ -24,6 +24,7 @@ import com.amazonaws.services.rekognition.model.KinesisDataStream;
 import com.amazonaws.services.rekognition.model.KinesisVideoStream;
 import com.amazonaws.services.rekognition.model.ListStreamProcessorsRequest;
 import com.amazonaws.services.rekognition.model.ListStreamProcessorsResult;
+import com.amazonaws.services.rekognition.model.ResourceNotFoundException;
 import com.amazonaws.services.rekognition.model.StartStreamProcessorRequest;
 import com.amazonaws.services.rekognition.model.StartStreamProcessorResult;
 import com.amazonaws.services.rekognition.model.StopStreamProcessorRequest;
@@ -32,6 +33,7 @@ import com.amazonaws.services.rekognition.model.StreamProcessor;
 import com.amazonaws.services.rekognition.model.StreamProcessorInput;
 import com.amazonaws.services.rekognition.model.StreamProcessorOutput;
 import com.amazonaws.services.rekognition.model.StreamProcessorSettings;
+import com.amazonaws.services.rekognition.model.StreamProcessorStatus;
 
 public class StreamManager {
 
@@ -105,7 +107,28 @@ public class StreamManager {
         Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " deleted.");
     }
 
-    public void describeStreamProcessor() {
+
+     /* Creates a StreamProcess if it doesn't exist already. Once the stream processor is created, it's started and then
+     * described to know the result of the stream processor.
+     */
+    public void process() {
+        // Creates a stream processor if it doesn't already exist and start.
+        try {
+            DescribeStreamProcessorResult result = describeStreamProcessor();
+            if (!result.getStatus().equals(StreamProcessorStatus.RUNNING.toString())) {
+                startStreamProcessor();
+            }
+        } catch (ResourceNotFoundException e) {
+            Utils.logE(getClass().getName(), "StreamProcessor with name : {} doesnt exist. Creating... " + streamProcessorName);
+            createStreamProcessor();
+            startStreamProcessor();
+        }
+
+        // Describe the Stream Processor results to log the status.
+        describeStreamProcessor();
+    }
+
+    public DescribeStreamProcessorResult describeStreamProcessor() {
         DescribeStreamProcessorResult describeStreamProcessorResult = rekognitionClient
                 .describeStreamProcessor(new DescribeStreamProcessorRequest().withName(streamProcessorName));
 
@@ -122,6 +145,7 @@ public class StreamManager {
         Utils.logE(getClass().getName(), "Status message - " + describeStreamProcessorResult.getStatusMessage());
         Utils.logE(getClass().getName(), "Creation timestamp - " + describeStreamProcessorResult.getCreationTimestamp());
         Utils.logE(getClass().getName(), "Last update timestamp - " + describeStreamProcessorResult.getLastUpdateTimestamp());
+        return describeStreamProcessorResult;
     }
 
     public void listStreamProcessors() {

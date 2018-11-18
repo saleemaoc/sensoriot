@@ -15,7 +15,7 @@ public class Constants {
 
         public static String streamProcessorName="streamProcessorForCam";
         public static String kinesisVideoStreamArn="arn:aws:kinesisvideo:ap-northeast-1:876659712960:stream/facekinesis/1541933661361";
-        public static String kinesisDataStreamArn="arn:aws:kinesis:ap-northeast-1:876659712960:stream/facestream";
+        public static String kinesisDataStreamArn="arn:aws:kinesis:ap-northeast-1:876659712960:stream/AmazonRekognition_facestream";
         public static String roleArn="arn:aws:iam::876659712960:role/facedetect_auth_MOBILEHUB_233006393";
         public static String collectionId="linkedin";
         public static Float matchThreshold=88F;

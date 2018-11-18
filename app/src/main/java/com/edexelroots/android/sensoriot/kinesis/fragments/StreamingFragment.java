@@ -20,12 +20,13 @@ import com.amazonaws.mobileconnectors.kinesisvideo.client.KinesisVideoAndroidCli
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSource;
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
 import com.edexelroots.android.sensoriot.Constants;
-import com.edexelroots.android.sensoriot.MainActivity;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.SensorIoTApp;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
+import com.edexelroots.android.sensoriot.kinesis.KDSWorker;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
+
 
 public class StreamingFragment extends Fragment implements TextureView.SurfaceTextureListener {
     public static final String KEY_MEDIA_SOURCE_CONFIGURATION = "mediaSourceConfiguration";
@@ -184,6 +185,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             Toast.makeText(getActivity(), "resumed streaming", Toast.LENGTH_SHORT).show();
             mStartStreamingButton.setText(getActivity().getText(R.string.stop_streaming));
             startRekStreamProcessor();
+
         } catch (final KinesisVideoException e) {
             Log.e(TAG, "unable to resume streaming", e);
             Toast.makeText(getActivity(), "failed to resume streaming", Toast.LENGTH_SHORT).show();
@@ -195,8 +197,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             if (mCameraMediaSource == null) {
                 return;
             }
-
-            stopRekStreamProcessor();
+             stopRekStreamProcessor();
             mCameraMediaSource.stop();
             Toast.makeText(getActivity(), "stopped streaming", Toast.LENGTH_SHORT).show();
             mStartStreamingButton.setText(getActivity().getText(R.string.start_streaming));
@@ -206,6 +207,38 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         }
     }
 
+
+/*    private void startExecutor() {
+        Utils.logE(getClass().getName(), "Start executor!!");
+        RekognitionInput ri = RekognitionInput.builder()
+                .faceCollectionId(Constants.Rekognition.collectionId)
+                .iamRoleArn(Constants.Rekognition.roleArn)
+                .kinesisVideoStreamArn(Constants.Rekognition.kinesisVideoStreamArn)
+                .kinesisDataStreamArn(Constants.Rekognition.kinesisDataStreamArn)
+                .matchThreshold(Constants.Rekognition.matchThreshold)
+                .streamingProcessorName(Constants.Rekognition.streamProcessorName)
+                .build();
+
+        kvrie = KinesisVideoRekognitionIntegrationExample.builder()
+                .region(Regions.AP_NORTHEAST_1)
+                .credentialsProvider(SensorIoTApp.getCredentialsProvider())
+                .kdsStreamName(Constants.Rekognition.kinesisDataStreamArn)
+                .kvsStreamName(Constants.Rekognition.kinesisVideoStreamArn)
+                .rekognitionInput(ri)
+                .build();
+
+        try {
+            kvrie.execute(15L);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+    private void stopExecutor() {
+        Utils.logE(getClass().getName(), "Stop executor!!");
+    }
 
     StreamManager sm = null;
     private void startRekStreamProcessor() {
@@ -220,6 +253,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
                     sm.startStreamProcessor();
                 }
             }).start();
+            KDSWorker.execute();
         }
         catch(Exception e){
             e.printStackTrace();
@@ -237,11 +271,17 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
                         sm.deleteStreamProcessor();
                     }
                 }).start();
+                KDSWorker.deleteResources();
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
+
+
+
+
+
     ////
     // TextureView.SurfaceTextureListener methods
     ////
