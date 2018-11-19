@@ -4,7 +4,7 @@ android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.edexelroots.android.sensoriot"
-        minSdkVersion 23
+        minSdkVersion 24
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
@@ -20,6 +20,10 @@ android {
         exclude 'META-INF/DEPENDENCIES'
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 repositories {
@@ -39,6 +43,9 @@ dependencies {
     implementation 'com.amazonaws:aws-android-sdk-iot:2.6.+'
     implementation 'com.amazonaws:aws-android-sdk-auth-userpools:2.6.+'
     implementation 'com.amazonaws:aws-android-sdk-auth-ui:2.6.+'
+    implementation 'com.amazonaws:amazon-kinesis-client:1.9.3'
+    //    implementation 'com.amazonaws:aws-android-sdk-kinesis:2.6.+'
+    //    implementation 'software.amazon.kinesis:amazon-kinesis-client:2.0.5'
     implementation 'com.google.android.gms:play-services-location:7.5.0'
     implementation 'org.sensingkit:SensingKitLib-debug@aar'
     implementation 'com.android.support:design:26.1.0'
@@ -46,5 +53,4 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    implementation 'com.amazonaws:amazon-kinesis-client:1.9.3'
 }

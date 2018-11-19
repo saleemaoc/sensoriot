@@ -37,7 +37,7 @@ import com.amazonaws.services.kinesis.model.Record;
 /**
  * Processes records and checkpoints progress.
  */
-public class KRecordProcessor  {
+public class KRecordProcessor  implements IRecordProcessor {
 
     private static final Log LOG = LogFactory.getLog(KRecordProcessor.class);
     private String kinesisShardId;

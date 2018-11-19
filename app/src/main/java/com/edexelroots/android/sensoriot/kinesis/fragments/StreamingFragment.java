@@ -271,7 +271,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
                         sm.deleteStreamProcessor();
                     }
                 }).start();
-                KDSWorker.deleteResources();
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
