@@ -42,7 +42,7 @@ public class MqttPublishManager {
     private static final String CUSTOMER_SPECIFIC_ENDPOINT = "a6mohze0r9216.iot.ap-northeast-1.amazonaws.com"; // ap-northeast-1
     public static final String COGNITO_POOL_ID = "ap-northeast-1:370140e1-edfb-4168-b051-f131bfce1068";
     public static String USER_POOL_ID = "ap-northeast-1_Hqb8ZkmUD";
-    public static String policyName = "iot_device"; // doesn't exist yet -- checking for rekognition
+    public static String policyName = "iot_device"; // doesn't exist yet
 
     // Region of AWS IoT
 //    public static final Regions MY_REGION = Regions.AP_SOUTHEAST_1;
@@ -70,8 +70,8 @@ public class MqttPublishManager {
     }
 
     public void connectToAWS(CognitoCachingCredentialsProvider cp) {
-        Utils.logE(LOG_TAG, "clientId = " + clientId);
-        Utils.logE(LOG_TAG, "Credential provider = " + cp.getIdentityId());
+//        Utils.logE(LOG_TAG, "clientId = " + clientId);
+//        Utils.logE(LOG_TAG, "Credential provider = " + cp.getIdentityId());
         mqttManager = new AWSIotMqttManager(clientId, CUSTOMER_SPECIFIC_ENDPOINT);
         try {
             mqttManager.connect(cp, mAwsIoTConnectionStatusCallback);

@@ -1,11 +1,9 @@
 package com.edexelroots.android.sensoriot.kinesis.fragments;
 
-import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.util.Size;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
@@ -24,7 +22,7 @@ import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.SensorIoTApp;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
-import com.edexelroots.android.sensoriot.kinesis.KDSWorker;
+import com.edexelroots.android.sensoriot.kinesis.KDSConsumer;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 
 
@@ -197,7 +195,6 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             if (mCameraMediaSource == null) {
                 return;
             }
-             stopRekStreamProcessor();
             mCameraMediaSource.stop();
             Toast.makeText(getActivity(), "stopped streaming", Toast.LENGTH_SHORT).show();
             mStartStreamingButton.setText(getActivity().getText(R.string.start_streaming));
@@ -207,8 +204,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         }
     }
 
-
-/*    private void startExecutor() {
+    /*    private void startExecutor() {
         Utils.logE(getClass().getName(), "Start executor!!");
         RekognitionInput ri = RekognitionInput.builder()
                 .faceCollectionId(Constants.Rekognition.collectionId)
@@ -236,24 +232,21 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         }
     }*/
 
-    private void stopExecutor() {
-        Utils.logE(getClass().getName(), "Stop executor!!");
-    }
 
     StreamManager sm = null;
     private void startRekStreamProcessor() {
         Utils.logE(getClass().getName(), "Start Rekog processor!!");
         try {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    sm.createStreamProcessor();
-                    sm.listStreamProcessors();
-                    sm.describeStreamProcessor();
-                    sm.startStreamProcessor();
-                }
+            new Thread(() -> {
+                sm.createStreamProcessor();
+                sm.listStreamProcessors();
+                sm.describeStreamProcessor();
+                sm.startStreamProcessor();
             }).start();
-            KDSWorker.execute();
+
+            // start pulling data from the stream
+            KDSConsumer kdsc = new KDSConsumer();
+            kdsc.execute();
         }
         catch(Exception e){
             e.printStackTrace();
@@ -261,21 +254,28 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         }
     }
 
-    private void stopRekStreamProcessor() {
-        if(sm != null) {
-            try {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        sm.stopStreamProcessor();
-                        sm.deleteStreamProcessor();
-                    }
-                }).start();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    @Override
+    public void onDestroy() {
+        try{
+            KDSConsumer.isExecuting = false;
+            stopRekStreamProcessor();
+        }catch (Exception e) {
+            e.printStackTrace();
         }
+        super.onDestroy();
+    }
+
+
+    private void stopRekStreamProcessor() {
+        if(sm == null) {
+            Utils.logE(TAG, "StreamManager object is null..");
+            return;
+        }
+        new Thread(() -> {
+            sm.stopStreamProcessor();
+            sm.deleteStreamProcessor();
+        }).start();
+
     }
 
 
