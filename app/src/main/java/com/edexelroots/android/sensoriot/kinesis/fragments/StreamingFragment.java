@@ -245,7 +245,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             }).start();
 
             // start pulling data from the stream
-            KDSConsumer kdsc = new KDSConsumer();
+            KDSConsumer kdsc = new KDSConsumer(getActivity());
             kdsc.execute();
         }
         catch(Exception e){

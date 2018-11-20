@@ -14,7 +14,7 @@ public class Constants {
 */
 
         public static String streamProcessorName="streamProcessorForCam";
-        public static String kinesisVideoStreamArn="arn:aws:kinesisvideo:ap-northeast-1:876659712960:stream/facekinesis/1542627966220";
+        public static String kinesisVideoStreamArn="arn:aws:kinesisvideo:ap-northeast-1:876659712960:stream/facekinesis/1542711912358";
         public static final String kdsStreamName = "AmazonRekognition_datastream";
         public static String kinesisDataStreamArn="arn:aws:kinesis:ap-northeast-1:876659712960:stream/" + kdsStreamName;
         //public static String roleArn="arn:aws:iam::876659712960:role/facedetect_auth_MOBILEHUB_233006393";
