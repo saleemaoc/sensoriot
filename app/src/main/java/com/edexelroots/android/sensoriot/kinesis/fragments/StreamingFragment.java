@@ -30,6 +30,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.amazonaws.kinesisvideo.client.KinesisVideoClient;
@@ -42,6 +43,7 @@ import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.SensorIoTApp;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
+import com.edexelroots.android.sensoriot.kinesis.CustomView;
 import com.edexelroots.android.sensoriot.kinesis.KDSConsumer;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 
@@ -70,7 +72,8 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         return s;
     }
 
-    SurfaceView mTextureView;
+    SurfaceView mSurfaceView;
+    TextureView mTextureView;
     Surface surface;
     SurfaceHolder mSurfaceHolder;
     CameraWorker cw;
@@ -84,30 +87,33 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         mConfiguration = getArguments().getParcelable(KEY_MEDIA_SOURCE_CONFIGURATION);
 
         final View view = inflater.inflate(R.layout.fragment_streaming, container, false);
-        mTextureView = view.findViewById(R.id.texture);
+        mSurfaceView = new CustomView(getContext());
+        mSurfaceView.setVisibility(View.INVISIBLE);
+        ((LinearLayout) view.findViewById(R.id.texture_container)).addView(mSurfaceView);
 /*
         int orientation = getResources().getConfiguration().orientation;
         if(orientation == Configuration.ORIENTATION_LANDSCAPE) {
             Toast.makeText(getContext(), "Landscape",Toast.LENGTH_SHORT ).show();
         } else {
 //            view.findViewById(R.id.texture_container).setRotation(90);
-//            mTextureView.setRotation(90);
+//            mSurfaceView.setRotation(90);
             Toast.makeText(getContext(), "Portrait",Toast.LENGTH_SHORT ).show();
         }
 */
-//        mTextureView.setSurfaceTextureListener(this);
-        mSurfaceHolder = mTextureView.getHolder();
+        mTextureView = view.findViewById(R.id.texture);
+        mTextureView.setSurfaceTextureListener(this);
+        mSurfaceHolder = mSurfaceView.getHolder();
         cw = new CameraWorker();
 //        mSurfaceHolder.addCallback(this);
-        mSurfaceHolder.addCallback(cw);
+//        mSurfaceHolder.addCallback(cw);
 
         return view;
     }
 
     private void adjustAspectRatio(int videoWidth, int videoHeight) {
 /*
-        int viewWidth = mTextureView.getWidth();
-        int viewHeight = mTextureView.getHeight();
+        int viewWidth = mSurfaceView.getWidth();
+        int viewHeight = mSurfaceView.getHeight();
         double aspectRatio = (double) videoHeight / videoWidth;
 
         int newWidth, newHeight;
@@ -128,11 +134,11 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
                 " off=" + xoff + "," + yoff);
 
         android.graphics.Matrix txform = new android.graphics.Matrix();
-        mTextureView.getTransform(txform);
+        mSurfaceView.getTransform(txform);
         txform.setScale((float) newWidth / viewWidth, (float) newHeight / viewHeight);
         txform.postRotate(45);          // just for fun
         txform.postTranslate(xoff, yoff);
-        mTextureView.setTransform(txform);
+        mSurfaceView.setTransform(txform);
 */
     }
 
@@ -184,7 +190,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         mStartStreamingButton = (Button) view.findViewById(R.id.start_streaming);
         mStartStreamingButton.setOnClickListener(stopStreamingWhenClicked());
-         cw.open();
+         // cw.open();
     }
 
     @Override
@@ -273,7 +279,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         } catch (Exception e) {
             e.printStackTrace();
         }
-        cw.close();
+        // cw.close();
         super.onDestroy();
     }
 
@@ -320,7 +326,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
         surfaceTexture.setDefaultBufferSize(1280, 720);
-        createClientAndStartStreaming(surface);
+        createClientAndStartStreaming(new Surface(surfaceTexture));
 //        new Thread(() -> drawRectangle(surface, 100, 200)).start();
 
     }
@@ -582,7 +588,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         public void surfaceCreated(SurfaceHolder holder) {
             mCameraSurface = holder.getSurface();
             mSurfaceHolder = holder;
-            drawRectangle(200, 200);
+//            drawRectangle(200, 200);
 
         }
 
