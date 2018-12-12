@@ -2,8 +2,20 @@ package com.edexelroots.android.sensoriot.kinesis;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.Surface;
+import android.widget.Button;
+import android.widget.Toast;
 
-import com.edexelroots.android.sensoriot.Camera2BasicFragment;
+import com.amazonaws.kinesisvideo.client.KinesisVideoClient;
+import com.amazonaws.kinesisvideo.common.exception.KinesisVideoException;
+import com.amazonaws.mobileconnectors.kinesisvideo.client.KinesisVideoAndroidClientFactory;
+import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSource;
+import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
+import com.edexelroots.android.sensoriot.Constants;
+import com.edexelroots.android.sensoriot.SensorIoTApp;
+import com.edexelroots.android.sensoriot.StreamManager;
+import com.edexelroots.android.sensoriot.kinesis.fragments.Camera2BasicFragment;
 import com.edexelroots.android.sensoriot.R;
 
 /*
@@ -31,9 +43,9 @@ public class CameraActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
         if (null == savedInstanceState) {
-            getSupportFragmentManager().beginTransaction()
+/*            getSupportFragmentManager().beginTransaction()
                     .replace(R.id.container, Camera2BasicFragment.newInstance())
-                    .commit();
+                    .commit();*/
         }
     }
 

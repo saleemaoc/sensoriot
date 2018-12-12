@@ -45,7 +45,7 @@
     </FrameLayout>
 
 
-    <com.edexelroots.android.sensoriot.AutoFitTextureView
+    <com.edexelroots.android.sensoriot.kinesis.ui.views.AutoFitTextureView
         android:id="@+id/texture"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

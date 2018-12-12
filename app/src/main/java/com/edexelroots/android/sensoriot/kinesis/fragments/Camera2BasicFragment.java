@@ -1,4 +1,4 @@
-package com.edexelroots.android.sensoriot;
+package com.edexelroots.android.sensoriot.kinesis.fragments;
 
 /*
  * Copyright 2017 The Android Open Source Project
@@ -59,10 +59,23 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.amazonaws.kinesisvideo.client.KinesisVideoClient;
+import com.amazonaws.kinesisvideo.common.exception.KinesisVideoException;
+import com.amazonaws.mobileconnectors.kinesisvideo.client.KinesisVideoAndroidClientFactory;
+import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSource;
+import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
+import com.edexelroots.android.sensoriot.Constants;
+import com.edexelroots.android.sensoriot.R;
+import com.edexelroots.android.sensoriot.SensorIoTApp;
+import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.kinesis.CustomView;
+import com.edexelroots.android.sensoriot.kinesis.KDSConsumer;
+import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
+import com.edexelroots.android.sensoriot.kinesis.ui.views.AutoFitTextureView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -152,6 +165,7 @@ public class Camera2BasicFragment extends Fragment
 
         @Override
         public boolean onSurfaceTextureDestroyed(SurfaceTexture texture) {
+            closeStreaming();
             return true;
         }
 
@@ -419,13 +433,20 @@ public class Camera2BasicFragment extends Fragment
         }
     }
 
-    public static Camera2BasicFragment newInstance() {
+    public static Camera2BasicFragment newInstance(KinesisActivity ka) {
         return new Camera2BasicFragment();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        // init kinesis stream related things
+        getArguments().setClassLoader(AndroidCameraMediaSourceConfiguration.class.getClassLoader());
+        mStreamName = getArguments().getString(KEY_STREAM_NAME);
+        mConfiguration = getArguments().getParcelable(KEY_MEDIA_SOURCE_CONFIGURATION);
+
+
         View view = inflater.inflate(R.layout.fragment_camera2_basic, container, false);
         LinearLayout surface = (LinearLayout)view.findViewById(R.id.surface);
         CustomView cv = new CustomView(getContext());
@@ -453,7 +474,7 @@ public class Camera2BasicFragment extends Fragment
     @Override
     public void onResume() {
         super.onResume();
-        startBackgroundThread();
+        // startBackgroundThread();
 
         // When the screen is turned off and turned back on, the SurfaceTexture is already
         // available, and "onSurfaceTextureAvailable" will not be called. In that case, we can open
@@ -468,11 +489,115 @@ public class Camera2BasicFragment extends Fragment
 
     @Override
     public void onPause() {
-        closeCamera();
-        stopBackgroundThread();
+        // closeCamera();
+        // stopBackgroundThread();
+        pauseStreaming();
         super.onPause();
     }
 
+    @Override
+    public void onDestroy() {
+        try {
+            KDSConsumer.isExecuting = false;
+//            stopRekStreamProcessor();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // cw.close();
+        super.onDestroy();
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    public static final String KEY_MEDIA_SOURCE_CONFIGURATION = "mediaSourceConfiguration";
+    public static final String KEY_STREAM_NAME = "facekinesis";
+
+//    private Button mStartStreamingButton;
+    private KinesisVideoClient mKinesisVideoClient;
+    private String mStreamName;
+    private AndroidCameraMediaSourceConfiguration mConfiguration;
+    private AndroidCameraMediaSource mCameraMediaSource;
+
+    StreamManager sm = null;
+    //Surface mSurface = null;
+
+    private void createClientAndStartStreaming(final Surface surface) {
+        assert surface != null;
+        try {
+            mKinesisVideoClient = KinesisVideoAndroidClientFactory.createKinesisVideoClient(
+                    getActivity(),
+                    SensorIoTApp.KINESIS_VIDEO_REGION,
+                    SensorIoTApp.getCredentialsProvider());
+
+            mCameraMediaSource = (AndroidCameraMediaSource) mKinesisVideoClient
+                    .createMediaSource(mStreamName, mConfiguration);
+
+            mCameraMediaSource.setPreviewSurfaces(surface);
+
+            if (sm == null) {
+                sm = new StreamManager(getActivity(),
+                        Constants.Rekognition.streamProcessorName,
+                        Constants.Rekognition.kinesisVideoStreamArn,
+                        Constants.Rekognition.kinesisDataStreamArn,
+                        Constants.Rekognition.roleArn,
+                        Constants.Rekognition.collectionId,
+                        Constants.Rekognition.matchThreshold);
+            }
+
+            resumeStreaming();
+
+        } catch (final KinesisVideoException e) {
+            Log.e(TAG, "unable to start streaming\n" + e.getMessage());
+            // throw new RuntimeException("unable to start streaming", e)
+            Toast.makeText(getContext(), "Unable to start streaming!!\n" + e.getMessage(), Toast.LENGTH_SHORT).show();
+            getActivity().finish();
+        }
+    }
+
+
+    private void resumeStreaming() {
+        try {
+            if (mCameraMediaSource == null) {
+                return;
+            }
+            mCameraMediaSource.start();
+            Toast.makeText(getActivity(), "resumed streaming", Toast.LENGTH_SHORT).show();
+            //mStartStreamingButton.setText(getActivity().getText(R.string.stop_streaming));
+//            startRekStreamProcessor();
+
+        } catch (final KinesisVideoException e) {
+            Log.e(TAG, "unable to resume streaming", e);
+            Toast.makeText(getActivity(), "failed to resume streaming", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void pauseStreaming() {
+        try {
+            if (mCameraMediaSource == null) {
+                return;
+            }
+            mCameraMediaSource.stop();
+            Toast.makeText(getActivity(), "stopped streaming", Toast.LENGTH_SHORT).show();
+            // mStartStreamingButton.setText(getActivity().getText(R.string.start_streaming));
+        } catch (final KinesisVideoException e) {
+            Log.e(TAG, "unable to pause streaming", e);
+            Toast.makeText(getActivity(), "failed to pause streaming", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void closeStreaming() {
+        try {
+            if (mCameraMediaSource != null)
+                mCameraMediaSource.stop();
+            if (mKinesisVideoClient != null)
+                mKinesisVideoClient.stopAllMediaSources();
+            KinesisVideoAndroidClientFactory.freeKinesisVideoClient();
+        } catch (final KinesisVideoException e) {
+            Log.e(TAG, "failed to release kinesis video client", e);
+        }
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
     private void requestCameraPermission() {
         if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
             new ConfirmationDialog().show(getChildFragmentManager(), FRAGMENT_DIALOG);
@@ -620,18 +745,20 @@ public class Camera2BasicFragment extends Fragment
         }
         setUpCameraOutputs(width, height);
         configureTransform(width, height);
-        Activity activity = getActivity();
+/*        Activity activity = getActivity();
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
                 throw new RuntimeException("Time out waiting to lock camera opening.");
             }
             manager.openCamera(mCameraId, mStateCallback, mBackgroundHandler);
+
         } catch (CameraAccessException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera opening.", e);
-        }
+        }*/
+        createClientAndStartStreaming(new Surface(mTextureView.getSurfaceTexture()));
     }
 
     /**
@@ -901,7 +1028,10 @@ public class Camera2BasicFragment extends Fragment
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.picture: {
-                takePicture();
+                pauseStreaming();
+                // startConfigFragment();
+                ((KinesisActivity)getActivity()).startConfigFragment();
+
                 break;
             }
             case R.id.info: {

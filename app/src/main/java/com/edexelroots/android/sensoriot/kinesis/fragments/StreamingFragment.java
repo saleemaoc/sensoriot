@@ -411,7 +411,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
         }
     }
 
-    class MyThread extends AsyncTask {
+/*    class MyThread extends AsyncTask {
 
         @Override
         protected Object doInBackground(Object... params) {
@@ -440,7 +440,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             return null;
         }
 
-    }
+    }*/
 
     public class CameraWorker implements Handler.Callback, SurfaceHolder.Callback {
         static final String TAG = "CamTest";

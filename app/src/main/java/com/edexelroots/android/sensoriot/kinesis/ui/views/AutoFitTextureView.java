@@ -1,4 +1,4 @@
-package com.edexelroots.android.sensoriot;
+package com.edexelroots.android.sensoriot.kinesis.ui.views;
 
 /*
  * Copyright 2014 The Android Open Source Project

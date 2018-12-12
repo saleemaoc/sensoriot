@@ -1,1 +1,1 @@
-include ':app', ':SensingKitLib', ':library-release', ':mylibrary'
+include ':app', ':SensingKitLib', ':mylibrary'
