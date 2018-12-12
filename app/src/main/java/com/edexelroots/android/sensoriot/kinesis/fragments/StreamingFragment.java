@@ -13,7 +13,6 @@ import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -43,7 +42,7 @@ import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.SensorIoTApp;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
-import com.edexelroots.android.sensoriot.kinesis.CustomView;
+import com.edexelroots.android.sensoriot.kinesis.ui.views.CustomView;
 import com.edexelroots.android.sensoriot.kinesis.KDSConsumer;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 
