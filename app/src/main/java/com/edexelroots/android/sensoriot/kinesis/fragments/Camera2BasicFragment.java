@@ -188,7 +188,7 @@ public class Camera2BasicFragment extends Fragment
     /**
      * A {@link CameraCaptureSession } for camera preview.
      */
-    private CameraCaptureSession mCaptureSession;
+//    private CameraCaptureSession mCaptureSession;
 
     /**
      * A reference to the opened {@link CameraDevice}.
@@ -203,6 +203,7 @@ public class Camera2BasicFragment extends Fragment
     /**
      * {@link CameraDevice.StateCallback} is called when {@link CameraDevice} changes its state.
      */
+/*
     private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
 
         @Override
@@ -232,21 +233,21 @@ public class Camera2BasicFragment extends Fragment
         }
 
     };
-
+*/
     /**
      * An additional thread for running tasks that shouldn't block the UI.
      */
-    private HandlerThread mBackgroundThread;
+//    private HandlerThread mBackgroundThread;
 
     /**
      * A {@link Handler} for running tasks in the background.
      */
-    private Handler mBackgroundHandler;
+//    private Handler mBackgroundHandler;
 
     /**
      * An {@link ImageReader} that handles still image capture.
      */
-    private ImageReader mImageReader;
+//    private ImageReader mImageReader;
 
     /**
      * This is the output file for our picture.
@@ -257,7 +258,7 @@ public class Camera2BasicFragment extends Fragment
      * This a callback object for the {@link ImageReader}. "onImageAvailable" will be called when a
      * still image is ready to be saved.
      */
-    private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
+/*    private final ImageReader.OnImageAvailableListener mOnImageAvailableListener
             = new ImageReader.OnImageAvailableListener() {
 
         @Override
@@ -265,7 +266,7 @@ public class Camera2BasicFragment extends Fragment
             mBackgroundHandler.post(new ImageSaver(reader.acquireNextImage(), mFile));
         }
 
-    };
+    };*/
 
     /**
      * {@link CaptureRequest.Builder} for the camera preview
@@ -280,7 +281,6 @@ public class Camera2BasicFragment extends Fragment
     /**
      * The current state of camera state for taking pictures.
      *
-     * @see #mCaptureCallback
      */
     private int mState = STATE_PREVIEW;
 
@@ -302,6 +302,7 @@ public class Camera2BasicFragment extends Fragment
     /**
      * A {@link CameraCaptureSession.CaptureCallback} that handles events related to JPEG capture.
      */
+/*
     private CameraCaptureSession.CaptureCallback mCaptureCallback
             = new CameraCaptureSession.CaptureCallback() {
 
@@ -366,6 +367,7 @@ public class Camera2BasicFragment extends Fragment
         }
 
     };
+*/
 
     /**
      * Shows a {@link Toast} on the UI thread.
@@ -650,10 +652,10 @@ public class Camera2BasicFragment extends Fragment
                 Size largest = Collections.max(
                         Arrays.asList(map.getOutputSizes(ImageFormat.JPEG)),
                         new CompareSizesByArea());
-                mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
-                        ImageFormat.JPEG, /*maxImages*/2);
+/*                mImageReader = ImageReader.newInstance(largest.getWidth(), largest.getHeight(),
+                        ImageFormat.JPEG, *//*maxImages*//*2);
                 mImageReader.setOnImageAvailableListener(
-                        mOnImageAvailableListener, mBackgroundHandler);
+                        mOnImageAvailableListener, mBackgroundHandler);*/
 
                 // Find out if we need to swap dimension to get the preview size relative to sensor
                 // coordinate.
@@ -745,7 +747,8 @@ public class Camera2BasicFragment extends Fragment
         }
         setUpCameraOutputs(width, height);
         configureTransform(width, height);
-/*        Activity activity = getActivity();
+        /*
+        Activity activity = getActivity();
         CameraManager manager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
         try {
             if (!mCameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
@@ -757,13 +760,15 @@ public class Camera2BasicFragment extends Fragment
             e.printStackTrace();
         } catch (InterruptedException e) {
             throw new RuntimeException("Interrupted while trying to lock camera opening.", e);
-        }*/
+        }
+        */
         createClientAndStartStreaming(new Surface(mTextureView.getSurfaceTexture()));
     }
 
     /**
      * Closes the current {@link CameraDevice}.
      */
+/*
     private void closeCamera() {
         try {
             mCameraOpenCloseLock.acquire();
@@ -785,19 +790,21 @@ public class Camera2BasicFragment extends Fragment
             mCameraOpenCloseLock.release();
         }
     }
-
+*/
     /**
      * Starts a background thread and its {@link Handler}.
      */
+/*
     private void startBackgroundThread() {
         mBackgroundThread = new HandlerThread("CameraBackground");
         mBackgroundThread.start();
         mBackgroundHandler = new Handler(mBackgroundThread.getLooper());
     }
-
+*/
     /**
      * Stops the background thread and its {@link Handler}.
      */
+/*
     private void stopBackgroundThread() {
         mBackgroundThread.quitSafely();
         try {
@@ -808,11 +815,12 @@ public class Camera2BasicFragment extends Fragment
             e.printStackTrace();
         }
     }
+*/
 
     /**
      * Creates a new {@link CameraCaptureSession} for camera preview.
      */
-    private void createCameraPreviewSession() {
+/*    private void createCameraPreviewSession() {
         try {
             SurfaceTexture texture = mTextureView.getSurfaceTexture();
             assert texture != null;
@@ -867,7 +875,7 @@ public class Camera2BasicFragment extends Fragment
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     /**
      * Configures the necessary {@link android.graphics.Matrix} transformation to `mTextureView`.
@@ -905,13 +913,16 @@ public class Camera2BasicFragment extends Fragment
     /**
      * Initiate a still image capture.
      */
+/*
     private void takePicture() {
         lockFocus();
     }
+*/
 
     /**
      * Lock the focus as the first step for a still image capture.
      */
+/*
     private void lockFocus() {
         try {
             // This is how to tell the camera to lock focus.
@@ -925,12 +936,13 @@ public class Camera2BasicFragment extends Fragment
             e.printStackTrace();
         }
     }
+*/
 
     /**
      * Run the precapture sequence for capturing a still image. This method should be called when
      * we get a response in {@link #mCaptureCallback} from {@link #lockFocus()}.
      */
-    private void runPrecaptureSequence() {
+/*    private void runPrecaptureSequence() {
         try {
             // This is how to tell the camera to trigger.
             mPreviewRequestBuilder.set(CaptureRequest.CONTROL_AE_PRECAPTURE_TRIGGER,
@@ -942,12 +954,13 @@ public class Camera2BasicFragment extends Fragment
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     /**
      * Capture a still picture. This method should be called when we get a response in
      * {@link #mCaptureCallback} from both {@link #lockFocus()}.
      */
+/*
     private void captureStillPicture() {
         try {
             final Activity activity = getActivity();
@@ -988,6 +1001,7 @@ public class Camera2BasicFragment extends Fragment
             e.printStackTrace();
         }
     }
+*/
 
     /**
      * Retrieves the JPEG orientation from the specified screen rotation.
@@ -1007,6 +1021,7 @@ public class Camera2BasicFragment extends Fragment
      * Unlock the focus. This method should be called when still image capture sequence is
      * finished.
      */
+/*
     private void unlockFocus() {
         try {
             // Reset the auto-focus trigger
@@ -1023,6 +1038,7 @@ public class Camera2BasicFragment extends Fragment
             e.printStackTrace();
         }
     }
+*/
 
     @Override
     public void onClick(View view) {
