@@ -25,14 +25,14 @@ public class CustomView extends SurfaceView {
         mHolder.setFormat(PixelFormat.TRANSPARENT);
         this.context = context;
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.WHITE);
+        paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeWidth(3f);
     }
 
     @Override
     protected void onDraw(Canvas canvas2) {
         super.onDraw(canvas2);
-
     }
 
     @Override
@@ -46,11 +46,10 @@ public class CustomView extends SurfaceView {
     }
 
     public void indicateFace(float cx, float cy, float wd, float ht) {
+        Utils.logE(getClass().getName(), cx + ", " + cy + ", " + ", " + wd + ", " + ht);
         if (mHolder.getSurface().isValid()) {
             final Canvas canvas = mHolder.lockCanvas();
-            Utils.logE(getClass().getName(), "touchRecieved by camera");
             if (canvas != null) {
-                Utils.logE(getClass().getName(), "touchRecieved CANVAS STILL Not Null");
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
                 canvas.drawRect(cx, cy, wd, ht, paint);
                 mHolder.unlockCanvasAndPost(canvas);

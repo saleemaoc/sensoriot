@@ -74,7 +74,7 @@ public class KDSConsumer {
             try {
                 getData();
             } catch (Exception e) {
-                Utils.logE(TAG, "ERRRORR!!");
+                Utils.logE(TAG, "ERRRORR!!" + e.getMessage());
                 e.printStackTrace();
             }
         }).start();
@@ -116,7 +116,7 @@ public class KDSConsumer {
 //                Utils.logE(TAG, r.getPartitionKey());
                 byte[] bytes = r.getData().array();
                 JSONObject jo = new JSONObject(new String(bytes));
-//                Utils.logE(TAG, "Data: " + jo.toString());
+                Utils.logE(TAG, "Data: " + jo.toString());
                 try {
                     JSONArray faceSearchResponse = jo.getJSONArray("FaceSearchResponse");
                     parseFaces(faceSearchResponse);
@@ -127,7 +127,7 @@ public class KDSConsumer {
             }
 
             try {
-                Thread.sleep(1000);
+                Thread.sleep(500);
             } catch (InterruptedException exception) {
                 throw new RuntimeException(exception);
             }
@@ -142,11 +142,23 @@ public class KDSConsumer {
             JSONObject face = facesArray.getJSONObject(i);
             if(face.has("MatchedFaces")) {
                 // we have matched faces
+
+                JSONObject detectedFace = face.getJSONObject("DetectedFace");
+                JSONObject boundingBox = detectedFace.getJSONObject("BoundingBox");
+                float heightRelative = (float) boundingBox.getDouble("Height");
+                float leftRelative = (float) boundingBox.getDouble("Left");
+                float topRelative = (float) boundingBox.getDouble("Top");
+                float widthRelative = (float) boundingBox.getDouble("Width");
+
+                Utils.logE(getClass().getName(), leftRelative + ", " + topRelative +  ", " + widthRelative +  ", " + heightRelative);
+
                 JSONArray matchedFaces = face.getJSONArray("MatchedFaces");
                 for(int j=0; j<matchedFaces.length(); j++) {
                     JSONObject matchedFace = matchedFaces.getJSONObject(j);
                     String similarity = matchedFace.getString("Similarity");
                     JSONObject faceDetails = matchedFace.getJSONObject("Face");
+
+
                     String externalImageId = "";
                     if(faceDetails.has("ExternalImageId")) {
                         externalImageId = faceDetails.getString("ExternalImageId");
@@ -162,7 +174,8 @@ public class KDSConsumer {
                     matchResult += ", Similarity = " + similarity;
 
                     String finalMatchResult = matchResult;
-                    ((KinesisActivity) mActivity).runOnUiThread(() -> Toast.makeText(mActivity, finalMatchResult, Toast.LENGTH_SHORT).show());
+                    ((KinesisActivity) mActivity).runOnUiThread(() -> ((KinesisActivity) mActivity).indicateFace(finalMatchResult, topRelative, leftRelative, heightRelative, widthRelative));
+
 
                     Utils.logE(TAG, matchResult);
                 }
@@ -255,4 +268,68 @@ public class KDSConsumer {
         ]
     }
 ]
+*/
+
+
+/*
+{
+    "InputInformation": {
+        "KinesisVideo": {
+            "StreamArn": "string",
+            "FragmentNumber": "string",
+            "ProducerTimestamp": number,
+            "ServerTimestamp": number,
+            "FrameOffsetInSeconds": number
+        }
+    },
+    "StreamProcessorInformation": {
+        "Status": "RUNNING"
+    },
+    "FaceSearchResponse": [
+        {
+            "DetectedFace": {
+                "BoundingBox": {
+                    "Width": number,
+                    "Top": number,
+                    "Height": number,
+                    "Left": number
+                },
+                "Confidence": 23,
+                "Landmarks": [
+                    {
+                        "Type": "string",
+                        "X": number,
+                        "Y": number
+                    }
+                ],
+                "Pose": {
+                    "Pitch": number,
+                    "Roll": number,
+                    "Yaw": number
+                },
+                "Quality": {
+                    "Brightness": number,
+                    "Sharpness": number
+                }
+            },
+            "MatchedFaces": [
+                {
+                    "Similarity": number,
+                    "Face": {
+                        "BoundingBox": {
+                            "Width": number,
+                            "Top": number,
+                            "Height": number,
+                            "Left": number
+                        },
+                        "Confidence": number,
+                        "ExternalImageId": "string",
+                        "FaceId": "string",
+                        "ImageId": "string"
+                    }
+                }
+            ]
+        }
+    ]
+}
 */

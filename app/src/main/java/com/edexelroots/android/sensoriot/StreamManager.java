@@ -66,26 +66,30 @@ public class StreamManager {
     }
 
     public void createStreamProcessor() {
-        //Setup input parameters
-        KinesisVideoStream kinesisVideoStream = new KinesisVideoStream().withArn(kinesisVideoStreamArn);
-        StreamProcessorInput streamProcessorInput =
-                new StreamProcessorInput().withKinesisVideoStream(kinesisVideoStream);
-        KinesisDataStream kinesisDataStream = new KinesisDataStream().withArn(kinesisDataStreamArn);
-        StreamProcessorOutput streamProcessorOutput =
-                new StreamProcessorOutput().withKinesisDataStream(kinesisDataStream);
-        FaceSearchSettings faceSearchSettings =
-                new FaceSearchSettings().withCollectionId(collectionId).withFaceMatchThreshold(matchThreshold);
-        StreamProcessorSettings streamProcessorSettings =
-                new StreamProcessorSettings().withFaceSearch(faceSearchSettings);
+        try {
+            //Setup input parameters
+            KinesisVideoStream kinesisVideoStream = new KinesisVideoStream().withArn(kinesisVideoStreamArn);
+            StreamProcessorInput streamProcessorInput =
+                    new StreamProcessorInput().withKinesisVideoStream(kinesisVideoStream);
+            KinesisDataStream kinesisDataStream = new KinesisDataStream().withArn(kinesisDataStreamArn);
+            StreamProcessorOutput streamProcessorOutput =
+                    new StreamProcessorOutput().withKinesisDataStream(kinesisDataStream);
+            FaceSearchSettings faceSearchSettings =
+                    new FaceSearchSettings().withCollectionId(collectionId).withFaceMatchThreshold(matchThreshold);
+            StreamProcessorSettings streamProcessorSettings =
+                    new StreamProcessorSettings().withFaceSearch(faceSearchSettings);
 
-        //Create the stream processor
-        CreateStreamProcessorResult createStreamProcessorResult = rekognitionClient.createStreamProcessor(
-                new CreateStreamProcessorRequest().withInput(streamProcessorInput).withOutput(streamProcessorOutput)
-                        .withSettings(streamProcessorSettings).withRoleArn(roleArn).withName(streamProcessorName));
+            //Create the stream processor
+            CreateStreamProcessorResult createStreamProcessorResult = rekognitionClient.createStreamProcessor(
+                    new CreateStreamProcessorRequest().withInput(streamProcessorInput).withOutput(streamProcessorOutput)
+                            .withSettings(streamProcessorSettings).withRoleArn(roleArn).withName(streamProcessorName));
 
-        //Display result
-        Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " created.");
-        Utils.logE(getClass().getName(), "StreamProcessorArn - " + createStreamProcessorResult.getStreamProcessorArn());
+            //Display result
+            Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " created.");
+            Utils.logE(getClass().getName(), "StreamProcessorArn - " + createStreamProcessorResult.getStreamProcessorArn());
+        } catch (Exception e) {
+
+        }
     }
 
     public void startStreamProcessor() {

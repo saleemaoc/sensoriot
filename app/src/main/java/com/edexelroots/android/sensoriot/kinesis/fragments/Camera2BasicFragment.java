@@ -67,6 +67,7 @@ import com.edexelroots.android.sensoriot.Constants;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.SensorIoTApp;
 import com.edexelroots.android.sensoriot.StreamManager;
+import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.ui.views.CustomView;
 import com.edexelroots.android.sensoriot.kinesis.KDSConsumer;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
@@ -294,6 +295,10 @@ public class Camera2BasicFragment extends Fragment
     private int mSensorOrientation;
 
     /**
+     * Surface view overlaying the Texture
+     * */
+    private CustomView cv;
+    /**
      * A {@link CameraCaptureSession.CaptureCallback} that handles events related to JPEG capture.
      */
 /*
@@ -445,13 +450,19 @@ public class Camera2BasicFragment extends Fragment
 
         View view = inflater.inflate(R.layout.fragment_camera2_basic, container, false);
         LinearLayout surface = (LinearLayout)view.findViewById(R.id.surface);
-        CustomView cv = new CustomView(getContext());
+        cv = new CustomView(getContext());
         cv.setBackgroundColor(Color.TRANSPARENT);
         cv.setZOrderOnTop(true);
         cv.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         surface.addView(cv);
 
         return view;
+    }
+
+    public void drawRectangle(float left, float top, float width, float height) {
+        if(cv != null) {
+            cv.indicateFace(left, top, width, height);
+        }
     }
 
     @Override
@@ -495,12 +506,44 @@ public class Camera2BasicFragment extends Fragment
     public void onDestroy() {
         try {
             KDSConsumer.isExecuting = false;
-//            stopRekStreamProcessor();
+            stopRekStreamProcessor();
         } catch (Exception e) {
             e.printStackTrace();
         }
         // cw.close();
         super.onDestroy();
+    }
+
+    private void startRekStreamProcessor() {
+        Utils.logE(getClass().getName(), "Start Rekog processor!!");
+        try {
+            new Thread(() -> {
+                sm.createStreamProcessor();
+                sm.listStreamProcessors();
+                sm.describeStreamProcessor();
+                sm.startStreamProcessor();
+            }).start();
+
+            // start pulling data from the stream
+            KDSConsumer kdsc = new KDSConsumer(getActivity());
+            kdsc.execute();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(e.getMessage());
+        }
+    }
+
+
+    private void stopRekStreamProcessor() {
+        if (sm == null) {
+            Utils.logE(TAG, "StreamManager object is null..");
+            return;
+        }
+        new Thread(() -> {
+            sm.stopStreamProcessor();
+            sm.deleteStreamProcessor();
+        }).start();
+
     }
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -558,7 +601,7 @@ public class Camera2BasicFragment extends Fragment
             mCameraMediaSource.start();
             Toast.makeText(getActivity(), "resumed streaming", Toast.LENGTH_SHORT).show();
             //mStartStreamingButton.setText(getActivity().getText(R.string.stop_streaming));
-//            startRekStreamProcessor();
+            startRekStreamProcessor();
 
         } catch (final KinesisVideoException e) {
             Log.e(TAG, "unable to resume streaming", e);
@@ -902,6 +945,10 @@ public class Camera2BasicFragment extends Fragment
             matrix.postRotate(180, centerX, centerY);
         }
         mTextureView.setTransform(matrix);
+    }
+
+    public Size getPreviewSize() {
+        return this.mPreviewSize;
     }
 
     /**
