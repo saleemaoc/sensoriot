@@ -10,12 +10,14 @@ import android.os.Handler;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.TextureView;
 
 import com.edexelroots.android.sensoriot.Utils;
 
 public class CustomView extends SurfaceView {
 
-    private final Paint paint;
+    private final Paint paint, paint2;
+
     private final SurfaceHolder mHolder;
     private final Context context;
 
@@ -27,13 +29,19 @@ public class CustomView extends SurfaceView {
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paint.setColor(Color.RED);
         paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(3f);
+        paint.setStrokeWidth(6f);
+
+        paint2 = new Paint(Paint.ANTI_ALIAS_FLAG);
+        paint2.setColor(Color.GREEN);
+        paint2.setStyle(Paint.Style.STROKE);
+        paint2.setStrokeWidth(6f);
     }
 
     @Override
     protected void onDraw(Canvas canvas2) {
         super.onDraw(canvas2);
     }
+/*
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -44,14 +52,35 @@ public class CustomView extends SurfaceView {
 
         return false;
     }
+*/
 
-    public void indicateFace(float cx, float cy, float wd, float ht) {
-        Utils.logE(getClass().getName(), cx + ", " + cy + ", " + ", " + wd + ", " + ht);
+    public void indicateFace(String faceName, float cx, float cy, float wd, float ht) {
+        Utils.logE(getClass().getName(), "CustomView: " + cx + ", " + cy + ", " + wd + ", " + ht);
         if (mHolder.getSurface().isValid()) {
             final Canvas canvas = mHolder.lockCanvas();
             if (canvas != null) {
                 canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
-                canvas.drawRect(cx, cy, wd, ht, paint);
+                cx = getWidth() - cx;
+                float bottom = cy + ht;
+                float right = cx - wd;
+
+                canvas.drawRect(cx, cy, right, bottom, paint);
+
+                /*
+                // top left and bottom right of the overlay
+                canvas.drawCircle(0,0,20, paint);
+                canvas.drawCircle(getWidth(),getHeight(),20, paint);*/
+                /*
+                // top-left and bottom-right of the texture view
+                canvas.drawCircle(tv.getLeft(),tv.getTop(),20, paint2);
+                canvas.drawCircle(tv.getWidth(), tv.getHeight(),20, paint2);
+                */
+
+                /*
+                canvas.drawCircle(cx,cy,10, paint2);
+                canvas.drawCircle(right,bottom,10, paint);
+                */
+
                 mHolder.unlockCanvasAndPost(canvas);
                 new Handler().postDelayed(() -> {
                     Canvas canvas1 = mHolder.lockCanvas();

@@ -24,6 +24,7 @@ import com.amazonaws.services.rekognition.model.KinesisDataStream;
 import com.amazonaws.services.rekognition.model.KinesisVideoStream;
 import com.amazonaws.services.rekognition.model.ListStreamProcessorsRequest;
 import com.amazonaws.services.rekognition.model.ListStreamProcessorsResult;
+import com.amazonaws.services.rekognition.model.ResourceInUseException;
 import com.amazonaws.services.rekognition.model.ResourceNotFoundException;
 import com.amazonaws.services.rekognition.model.StartStreamProcessorRequest;
 import com.amazonaws.services.rekognition.model.StartStreamProcessorResult;
@@ -93,16 +94,25 @@ public class StreamManager {
     }
 
     public void startStreamProcessor() {
-        StartStreamProcessorResult startStreamProcessorResult =
-                rekognitionClient.startStreamProcessor(new StartStreamProcessorRequest().withName(streamProcessorName));
-        Utils.logE(getClass(). getName(),"Stream Processor " + streamProcessorName + " started.");
-        Utils.logE(getClass().getName(), startStreamProcessorResult.toString());
+        try {
+            StartStreamProcessorResult startStreamProcessorResult =
+                    rekognitionClient.startStreamProcessor(new StartStreamProcessorRequest().withName(streamProcessorName));
+            Utils.logE(getClass(). getName(),"Stream Processor " + streamProcessorName + " started.");
+            Utils.logE(getClass().getName(), startStreamProcessorResult.toString());
+        }catch (ResourceInUseException riue) {
+            riue.printStackTrace();
+        }
     }
 
     public void stopStreamProcessor() {
-        StopStreamProcessorResult stopStreamProcessorResult =
-                rekognitionClient.stopStreamProcessor(new StopStreamProcessorRequest().withName(streamProcessorName));
-        Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " stopped.");
+        try{
+
+            StopStreamProcessorResult stopStreamProcessorResult =
+                    rekognitionClient.stopStreamProcessor(new StopStreamProcessorRequest().withName(streamProcessorName));
+            Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " stopped.");
+        } catch (ResourceInUseException riue) {
+            riue.printStackTrace();
+        }
     }
 
     public void deleteStreamProcessor() {

@@ -459,9 +459,9 @@ public class Camera2BasicFragment extends Fragment
         return view;
     }
 
-    public void drawRectangle(float left, float top, float width, float height) {
+    public void drawRectangle(String label, float left, float top, float width, float height) {
         if(cv != null) {
-            cv.indicateFace(left, top, width, height);
+            cv.indicateFace(label, left, top, width, height);
         }
     }
 

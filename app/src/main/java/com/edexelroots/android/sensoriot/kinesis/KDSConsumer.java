@@ -109,14 +109,14 @@ public class KDSConsumer {
 
             // Put the result into record list. The result can be empty.
             records = result.getRecords();
-            Utils.logE(TAG, "RECORDS LENGTH: " + records.size());
+//            Utils.logE(TAG, "RECORDS LENGTH: " + records.size());
 
             for (Record r : records) {
 //                Utils.logE(TAG, r.getSequenceNumber());
 //                Utils.logE(TAG, r.getPartitionKey());
                 byte[] bytes = r.getData().array();
                 JSONObject jo = new JSONObject(new String(bytes));
-                Utils.logE(TAG, "Data: " + jo.toString());
+//                Utils.logE(TAG, "Data: " + jo.toString());
                 try {
                     JSONArray faceSearchResponse = jo.getJSONArray("FaceSearchResponse");
                     parseFaces(faceSearchResponse);
@@ -145,9 +145,9 @@ public class KDSConsumer {
 
                 JSONObject detectedFace = face.getJSONObject("DetectedFace");
                 JSONObject boundingBox = detectedFace.getJSONObject("BoundingBox");
+                float leftRelative = (float) boundingBox.getDouble("Top");
+                float topRelative = (float) boundingBox.getDouble("Left");
                 float heightRelative = (float) boundingBox.getDouble("Height");
-                float leftRelative = (float) boundingBox.getDouble("Left");
-                float topRelative = (float) boundingBox.getDouble("Top");
                 float widthRelative = (float) boundingBox.getDouble("Width");
 
                 Utils.logE(getClass().getName(), leftRelative + ", " + topRelative +  ", " + widthRelative +  ", " + heightRelative);
@@ -173,7 +173,7 @@ public class KDSConsumer {
                     }
                     matchResult += ", Similarity = " + similarity;
 
-                    String finalMatchResult = matchResult;
+                    String finalMatchResult = externalImageId;//matchResult;
                     ((KinesisActivity) mActivity).runOnUiThread(() -> ((KinesisActivity) mActivity).indicateFace(finalMatchResult, topRelative, leftRelative, heightRelative, widthRelative));
 
 

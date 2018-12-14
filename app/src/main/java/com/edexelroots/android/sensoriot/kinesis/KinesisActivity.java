@@ -41,20 +41,24 @@ public class KinesisActivity extends AppCompatActivity {
     private final String STREAMING_FRAGMENT_TAG = "preview_fragment";
 
     public void indicateFace(String label, float rTop, float rLeft, float rHeight, float rWidth) {
-        Fragment f = getSupportFragmentManager().findFragmentByTag(STREAMING_FRAGMENT_TAG);
-//        Toast.makeText(this, label, Toast.LENGTH_SHORT).show();
-        // Todo
-        assert f != null && f instanceof Camera2BasicFragment;
-        Size previewSize = ((Camera2BasicFragment) f).getPreviewSize();
-        Utils.logE(getClass().getName(), "Preview: " + previewSize.getWidth() + ", " + previewSize.getHeight());
-        int w = previewSize.getHeight();
-        int h = previewSize.getWidth();
-        float top = h * rTop;
-        float height = h * rHeight;
-        float left = w * rLeft;
-        float width = w * rWidth;
+        try {
+            Fragment f = getSupportFragmentManager().findFragmentByTag(STREAMING_FRAGMENT_TAG);
+            Toast.makeText(this, label, Toast.LENGTH_SHORT).show();
 
-        ((Camera2BasicFragment) f).drawRectangle(left, top, width, height);
+            assert f != null && f instanceof Camera2BasicFragment;
+            Size previewSize = ((Camera2BasicFragment) f).getPreviewSize();
+            Utils.logE(getClass().getName(), "Preview: " + previewSize.getWidth() + ", " + previewSize.getHeight());
+            int w = previewSize.getHeight();
+            int h = previewSize.getWidth();
+            float top = h * rTop;
+            float height = h * rHeight;
+            float left = w * rLeft;
+            float width = w * rWidth;
+
+            ((Camera2BasicFragment) f).drawRectangle(label, left, top, width, height);
+        }catch (NullPointerException npe){
+            npe.printStackTrace();
+        }
     }
 
     public void startCamera2Fragment(Bundle extras) {
