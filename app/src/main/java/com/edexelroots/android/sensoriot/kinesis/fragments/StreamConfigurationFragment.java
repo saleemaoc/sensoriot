@@ -158,7 +158,8 @@ public class StreamConfigurationFragment extends Fragment {
         extras.putString(StreamingFragment.KEY_STREAM_NAME, mStreamName.getText().toString());
 
         // mActivity.startStreamingFragment(extras);
-        mActivity.startCamera2Fragment(extras);
+        // mActivity.startCamera2Fragment(extras);
+        mActivity.startFaceDetectionActivity(extras);
     }
 
     private AndroidCameraMediaSourceConfiguration getCurrentConfiguration() {

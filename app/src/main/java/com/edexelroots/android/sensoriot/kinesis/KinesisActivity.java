@@ -1,5 +1,6 @@
 package com.edexelroots.android.sensoriot.kinesis;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,6 +14,7 @@ import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.fragments.Camera2BasicFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamConfigurationFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
+import com.google.android.gms.samples.vision.face.facetracker.FaceTrackerActivity;
 
 public class KinesisActivity extends AppCompatActivity {
 
@@ -70,6 +72,11 @@ public class KinesisActivity extends AppCompatActivity {
             Toast.makeText(getApplicationContext(), "Could not start streaming", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
+    }
+    public void startFaceDetectionActivity(Bundle extras) {
+        Intent i = new Intent(this, FaceTrackerActivity.class);
+        i.putExtra("config", extras);
+        startActivity(i);
     }
 
     public  void startStreamingFragment(Bundle extras) {

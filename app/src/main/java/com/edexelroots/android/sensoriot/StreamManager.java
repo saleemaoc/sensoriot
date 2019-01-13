@@ -7,6 +7,8 @@ package com.edexelroots.android.sensoriot;
 // Stream Processor operations.
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.widget.Toast;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.regions.Region;
@@ -19,13 +21,18 @@ import com.amazonaws.services.rekognition.model.DeleteStreamProcessorRequest;
 import com.amazonaws.services.rekognition.model.DeleteStreamProcessorResult;
 import com.amazonaws.services.rekognition.model.DescribeStreamProcessorRequest;
 import com.amazonaws.services.rekognition.model.DescribeStreamProcessorResult;
+import com.amazonaws.services.rekognition.model.FaceMatch;
 import com.amazonaws.services.rekognition.model.FaceSearchSettings;
+import com.amazonaws.services.rekognition.model.Image;
 import com.amazonaws.services.rekognition.model.KinesisDataStream;
 import com.amazonaws.services.rekognition.model.KinesisVideoStream;
 import com.amazonaws.services.rekognition.model.ListStreamProcessorsRequest;
 import com.amazonaws.services.rekognition.model.ListStreamProcessorsResult;
 import com.amazonaws.services.rekognition.model.ResourceInUseException;
 import com.amazonaws.services.rekognition.model.ResourceNotFoundException;
+import com.amazonaws.services.rekognition.model.SearchFacesByImageRequest;
+import com.amazonaws.services.rekognition.model.SearchFacesByImageResult;
+import com.amazonaws.services.rekognition.model.StartFaceSearchRequest;
 import com.amazonaws.services.rekognition.model.StartStreamProcessorRequest;
 import com.amazonaws.services.rekognition.model.StartStreamProcessorResult;
 import com.amazonaws.services.rekognition.model.StopStreamProcessorRequest;
@@ -35,6 +42,9 @@ import com.amazonaws.services.rekognition.model.StreamProcessorInput;
 import com.amazonaws.services.rekognition.model.StreamProcessorOutput;
 import com.amazonaws.services.rekognition.model.StreamProcessorSettings;
 import com.amazonaws.services.rekognition.model.StreamProcessorStatus;
+
+import java.nio.ByteBuffer;
+import java.util.List;
 
 public class StreamManager {
 
@@ -48,6 +58,7 @@ public class StreamManager {
     private AmazonRekognition rekognitionClient;
 
 
+    Context mContext = null;
     public StreamManager(Context c, String spName,
                          String kvStreamArn,
                          String kdStreamArn,
@@ -64,6 +75,8 @@ public class StreamManager {
         rekognitionClient = new AmazonRekognitionClient(cp);
         rekognitionClient.setRegion(Region.getRegion(Regions.AP_NORTHEAST_1));
         rekognitionClient.setEndpoint("rekognition.ap-northeast-1.amazonaws.com");
+        mContext = c;
+
     }
 
     public void createStreamProcessor() {
@@ -91,6 +104,24 @@ public class StreamManager {
         } catch (Exception e) {
 
         }
+    }
+
+    public boolean startFaceSearchRequest(ByteBuffer byteBuffer){
+        Utils.logE(getClass().getName(), "ByteBuffer size: ");
+        Image image = new Image().withBytes(byteBuffer);
+        SearchFacesByImageRequest sfbir = new SearchFacesByImageRequest()
+                .withImage(image)
+                .withCollectionId(collectionId)
+                .withFaceMatchThreshold(matchThreshold)
+                .withMaxFaces(2);
+
+        SearchFacesByImageResult sfbi = rekognitionClient.searchFacesByImage(sfbir);
+        Utils.logE(getClass().getName(), "Faces matching largest face in image from");
+        List<FaceMatch> faceImageMatches = sfbi.getFaceMatches();
+        for (FaceMatch face: faceImageMatches) {
+            Utils.logE(getClass().getName(), face.getFace().getExternalImageId());
+        }
+        return faceImageMatches.size() > 0;
     }
 
     public void startStreamProcessor() {
