@@ -314,6 +314,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
                 .build();
         Frame frame = new Frame.Builder().setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length)).build();
         SparseArray faces = detector.detect(frame);
+
         boolean hasAFace = faces.size() > 0;
 
         if (hasAFace && faceId != currentFaceId) {

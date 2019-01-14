@@ -1,6 +1,5 @@
 package com.edexelroots.android.sensoriot.vision;
 
-import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
@@ -24,26 +23,13 @@ public class MyFaceDetector extends Detector {
     }
 
     public SparseArray<Face> detect(Frame frame) {
-/*
-        Frame outputFrame = new Frame.Builder()
-                .setImageData(frame.getGrayscaleImageData(), frame.getMetadata().getWidth(),
-                        frame.getMetadata().getHeight(), ImageFormat.NV21)
-                .setId(frame.getMetadata().getId())
-                .setTimestampMillis(frame.getMetadata().getTimestampMillis())
-                .setRotation(frame.getMetadata().getRotation())
-                .build();
-
-*/
         SparseArray<Face> faces = mDelegate.detect(frame);
-
         int w = frame.getMetadata().getWidth();
         int h = frame.getMetadata().getHeight();
 
         ByteBuffer byteBufferRaw = frame.getGrayscaleImageData();
         byte[] byteBuffer = byteBufferRaw.array();
         YuvImage yuvimage  = new YuvImage(byteBuffer, ImageFormat.NV21, w, h, null);
-
-
 
         if(faces.size() > 0) {
             Face face = faces.valueAt(0);
@@ -60,8 +46,6 @@ public class MyFaceDetector extends Detector {
             }catch (Exception e) {
                 e.printStackTrace();
             }
-
-
         }
         return faces;
     }
