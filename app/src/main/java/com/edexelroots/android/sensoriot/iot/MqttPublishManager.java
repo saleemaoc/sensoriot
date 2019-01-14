@@ -63,8 +63,6 @@ public class MqttPublishManager {
     }
 
     public void connectToAWS(CognitoCachingCredentialsProvider cp) {
-//        Utils.logE(LOG_TAG, "clientId = " + clientId);
-//        Utils.logE(LOG_TAG, "Credential provider = " + cp.getIdentityId());
         mqttManager = new AWSIotMqttManager(clientId, CUSTOMER_SPECIFIC_ENDPOINT);
         try {
             mqttManager.connect(cp, mAwsIoTConnectionStatusCallback);

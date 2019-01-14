@@ -29,4 +29,5 @@
         android:layout_height="match_parent"
         android:name="com.edexelroots.android.sensoriot.kinesis.fragments.SensorFragment"
         tools:layout="@layout/fragment_sensor"/>
+
 </android.support.design.widget.CoordinatorLayout>

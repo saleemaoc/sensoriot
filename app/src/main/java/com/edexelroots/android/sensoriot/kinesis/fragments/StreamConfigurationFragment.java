@@ -68,7 +68,11 @@ public class StreamConfigurationFragment extends Fragment {
         getActivity().setTitle(getActivity().getString(R.string.title_fragment_stream));
 
         final View view = inflater.inflate(R.layout.fragment_stream_configuration, container, false);
+        setupKinesisVideoClient(view);
+        return view;
+    }
 
+    private void setupKinesisVideoClient(View view) {
         try {
             mKinesisVideoClient = KinesisVideoAndroidClientFactory.createKinesisVideoClient(
                     getActivity(),
@@ -106,8 +110,6 @@ public class StreamConfigurationFragment extends Fragment {
                 view,
                 R.id.codecs_spinner,
                 getSupportedMimeTypes());
-
-        return view;
     }
 
     private void select640orBelow() {
