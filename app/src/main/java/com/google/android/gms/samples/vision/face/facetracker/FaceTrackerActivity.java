@@ -28,7 +28,9 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Base64;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -41,6 +43,7 @@ import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.CameraSource;
+import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
@@ -48,6 +51,7 @@ import com.google.android.gms.vision.face.FaceDetector;
 import com.google.android.gms.samples.vision.face.facetracker.ui.camera.CameraSourcePreview;
 import com.google.android.gms.samples.vision.face.facetracker.ui.camera.GraphicOverlay;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
@@ -291,31 +295,25 @@ public final class FaceTrackerActivity extends AppCompatActivity {
             Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             iv.setImageBitmap(bitmap);
 
-            //b is the Bitmap
-            //calculate how many bytes our image consists of.
-//            int byteCount = bitmap.getByteCount();
-            //or we can calculate bytes this way. Use a different value than 4 if you don't use 32bit images.
-            //int bytes = b.getWidth()*b.getHeight()*4;
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+            byte[] byteArray = byteArrayOutputStream .toByteArray();
+            // String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+            ByteBuffer buffer = ByteBuffer.wrap(byteArray);
 
-/*
-            ByteBuffer buffer = ByteBuffer.allocate(byteCount); //Create a new buffer
-            bitmap.copyPixelsToBuffer(buffer); //Move the byte data to the buffer
-*/
+            StreamManager sm = new StreamManager(this);
 
-//            ByteBuffer buffer = ByteBuffer.wrap(bytes);
-            StreamManager sm = new StreamManager(this,
-                    Constants.Rekognition.streamProcessorName,
-                    Constants.Rekognition.kinesisVideoStreamArn,
-                    Constants.Rekognition.kinesisDataStreamArn,
-                    Constants.Rekognition.roleArn,
-                    Constants.Rekognition.collectionId,
-                    Constants.Rekognition.matchThreshold);
+            FaceDetector detector = new FaceDetector.Builder(this)
+                    .setTrackingEnabled(true)
+                    .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
+                    .build();
+            Frame frame = new Frame.Builder().setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length)).build();
+            SparseArray faces = detector.detect(frame);
+            boolean hasAFace = faces.size() > 0;
 
-            if(faceId != currentFaceId) {
+            if (hasAFace && faceId != currentFaceId) {
                 currentFaceId = faceId;
-                new Thread(() -> {
-                    sm.startFaceSearchRequest(raw);
-                }).start();
+                new Thread(() -> sm.startFaceSearchRequest(buffer)).start();
             }
         }
         if(mFaceTracker != null) {

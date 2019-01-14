@@ -24,6 +24,7 @@ import com.amazonaws.services.rekognition.model.DescribeStreamProcessorResult;
 import com.amazonaws.services.rekognition.model.FaceMatch;
 import com.amazonaws.services.rekognition.model.FaceSearchSettings;
 import com.amazonaws.services.rekognition.model.Image;
+import com.amazonaws.services.rekognition.model.InvalidParameterException;
 import com.amazonaws.services.rekognition.model.KinesisDataStream;
 import com.amazonaws.services.rekognition.model.KinesisVideoStream;
 import com.amazonaws.services.rekognition.model.ListStreamProcessorsRequest;
@@ -44,6 +45,7 @@ import com.amazonaws.services.rekognition.model.StreamProcessorSettings;
 import com.amazonaws.services.rekognition.model.StreamProcessorStatus;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StreamManager {
@@ -59,6 +61,18 @@ public class StreamManager {
 
 
     Context mContext = null;
+
+    public StreamManager(Context c) {
+        this(c,
+                Constants.Rekognition.streamProcessorName,
+                Constants.Rekognition.kinesisVideoStreamArn,
+                Constants.Rekognition.kinesisDataStreamArn,
+                Constants.Rekognition.roleArn,
+                Constants.Rekognition.collectionId,
+                Constants.Rekognition.matchThreshold);
+        mContext = c;
+    }
+
     public StreamManager(Context c, String spName,
                          String kvStreamArn,
                          String kdStreamArn,
@@ -106,7 +120,7 @@ public class StreamManager {
         }
     }
 
-    public boolean startFaceSearchRequest(ByteBuffer byteBuffer){
+    public boolean startFaceSearchRequest(ByteBuffer byteBuffer) throws InvalidParameterException {
         Utils.logE(getClass().getName(), "ByteBuffer size: ");
         Image image = new Image().withBytes(byteBuffer);
         SearchFacesByImageRequest sfbir = new SearchFacesByImageRequest()
@@ -115,11 +129,16 @@ public class StreamManager {
                 .withFaceMatchThreshold(matchThreshold)
                 .withMaxFaces(2);
 
-        SearchFacesByImageResult sfbi = rekognitionClient.searchFacesByImage(sfbir);
-        Utils.logE(getClass().getName(), "Faces matching largest face in image from");
-        List<FaceMatch> faceImageMatches = sfbi.getFaceMatches();
-        for (FaceMatch face: faceImageMatches) {
-            Utils.logE(getClass().getName(), face.getFace().getExternalImageId());
+        List<FaceMatch> faceImageMatches = new ArrayList<>();
+        try {
+            SearchFacesByImageResult sfbi = rekognitionClient.searchFacesByImage(sfbir);
+            Utils.logE(getClass().getName(), "Faces matching largest face in image from");
+            faceImageMatches = sfbi.getFaceMatches();
+            for (FaceMatch face : faceImageMatches) {
+                Utils.logE(getClass().getName(), face.getFace().getExternalImageId());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return faceImageMatches.size() > 0;
     }
