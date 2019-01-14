@@ -41,7 +41,7 @@ import com.amazonaws.services.rekognition.model.StreamProcessorOutput;
 import com.amazonaws.services.rekognition.model.StreamProcessorSettings;
 import com.amazonaws.services.rekognition.model.StreamProcessorStatus;
 import com.edexelroots.android.sensoriot.iot.MqttPublishManager;
-import com.edexelroots.android.sensoriot.vision.dummy.FaceMatchItem;
+import com.edexelroots.android.sensoriot.vision.FaceMatchItem;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

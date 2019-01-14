@@ -112,7 +112,7 @@ public class MqttPublishManager {
             identityManager.getUserID(new IdentityHandler() {
                 @Override
                 public void onIdentityId(String identityId) {
-                    new CredentialProvider(MqttPublishManager.this, mContext).execute(idToken, identityId);
+                    new CredentialProviderIoT(MqttPublishManager.this, mContext).execute(idToken, identityId);
                 }
 
                 @Override

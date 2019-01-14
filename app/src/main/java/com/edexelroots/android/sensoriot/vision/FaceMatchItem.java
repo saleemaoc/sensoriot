@@ -1,4 +1,4 @@
-package com.edexelroots.android.sensoriot.vision.dummy;
+package com.edexelroots.android.sensoriot.vision;
 
 import android.graphics.Bitmap;
 

@@ -29,21 +29,14 @@ import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.Mult
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.Utils;
-import com.edexelroots.android.sensoriot.iot.AWSIoTConnectionStatus;
-import com.edexelroots.android.sensoriot.iot.CredentialProvider;
-import com.edexelroots.android.sensoriot.iot.MqttPublishManager;
 import com.edexelroots.android.sensoriot.kinesis.fragments.Camera2BasicFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamConfigurationFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
 import com.edexelroots.android.sensoriot.vision.CredentialProviderRecognition;
 import com.edexelroots.android.sensoriot.vision.FaceTrackerActivity;
 
-import org.apache.http.client.CredentialsProvider;
-import org.w3c.dom.Text;
-
 public class KinesisActivity extends AppCompatActivity {
 
-    public static CredentialsProvider mCredentialProvider = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,35 +50,24 @@ public class KinesisActivity extends AppCompatActivity {
         }
     }
 
-/*
-    MqttPublishManager mPublishManager = null;
-    AWSIoTConnectionStatus mConnectionStatus = null;
-*/
-
     protected void signInAWSCognito() {
-        AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
-            @Override
-            public void onComplete(AWSStartupResult awsStartupResult) {
+        AWSMobileClient.getInstance().initialize(this, awsStartupResult -> {
 
-                final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
-                if(!identityManager.isUserSignedIn()) {
-                    AuthUIConfiguration config =
-                            new AuthUIConfiguration.Builder()
-                                    .userPools(true)  // true? show the Email and Password UI
-                                    .backgroundColor(Color.BLUE) // Change the backgroundColor
-                                    .isBackgroundColorFullScreen(true) // Full screen backgroundColor the backgroundColor full screenff
-                                    .fontFamily("sans-serif-light") // Apply sans-serif-light as the global font
-                                    .canCancel(true)
-                                    .build();
+            final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
+            if(!identityManager.isUserSignedIn()) {
+                AuthUIConfiguration config =
+                        new AuthUIConfiguration.Builder()
+                                .userPools(true)  // true? show the Email and Password UI
+                                .backgroundColor(Color.BLUE) // Change the backgroundColor
+                                .isBackgroundColorFullScreen(true) // Full screen backgroundColor the backgroundColor full screenff
+                                .fontFamily("sans-serif-light") // Apply sans-serif-light as the global font
+                                .canCancel(true)
+                                .build();
 
-                    SignInUI signInUI = (SignInUI) AWSMobileClient.getInstance().getClient(KinesisActivity.this, SignInUI.class);
-                    signInUI.login(KinesisActivity.this, KinesisActivity.class).authUIConfiguration(config).execute();
-                }
-//                mConnectionStatus = new AWSIoTConnectionStatus(KinesisActivity.this, findViewById(R.id.tv_connection_status));
-//                mPublishManager =  new MqttPublishManager(KinesisActivity.this, mConnectionStatus);
-//                mPublishManager.setupSession();
-                setupSession();
+                SignInUI signInUI = (SignInUI) AWSMobileClient.getInstance().getClient(KinesisActivity.this, SignInUI.class);
+                signInUI.login(KinesisActivity.this, KinesisActivity.class).authUIConfiguration(config).execute();
             }
+            setupSession();
         }).execute();
     }
 
@@ -145,11 +127,6 @@ public class KinesisActivity extends AppCompatActivity {
         startActivity(i);
     }
 
-    public void startFaceDetectionActivity() {
-        Intent i = new Intent(this, FaceTrackerActivity.class);
-        startActivity(i);
-    }
-
     public  void startStreamingFragment(Bundle extras) {
         try {
             StreamingFragment f = StreamingFragment.newInstance(this);
@@ -166,6 +143,7 @@ public class KinesisActivity extends AppCompatActivity {
         try {
             StreamConfigurationFragment f = StreamConfigurationFragment.newInstance(this);
             startFragment(f, null);
+            findViewById(R.id.progress_bar).setVisibility(View.GONE);
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "Could not config", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
@@ -174,9 +152,7 @@ public class KinesisActivity extends AppCompatActivity {
 
     public void credentialsReceived(CognitoCachingCredentialsProvider credentialsProvider) {
         ((TextView) findViewById(R.id.tv_connection_status)).setText("");
-        findViewById(R.id.progress_bar).setVisibility(View.GONE);
         startConfigFragment();
-        // startFaceDetectionActivity();
     }
 
     private class AWSAuthHandler implements AuthenticationHandler {

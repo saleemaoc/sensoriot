@@ -32,14 +32,12 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
-import com.edexelroots.android.sensoriot.vision.dummy.FaceMatchItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.CameraSource;
@@ -165,17 +163,19 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
             // available.  The detector will automatically become operational once the library
             // download completes on device.
             Log.w(TAG, "Face detector dependencies are not yet available.");
-            mFaceDetector.release();
+            return;
         }
 
         int cameraFacing = CameraSource.CAMERA_FACING_BACK;
+        int hr = 1280, vr = 960;
         if(acmsc != null) {
             cameraFacing = acmsc.getCameraFacing();
+            hr = acmsc.getHorizontalResolution();
+            vr = acmsc.getHorizontalResolution();
         }
 
         mCameraSource = new CameraSource.Builder(context, mFaceDetector)
-                .setRequestedPreviewSize(1080, 720)
-//                .setRequestedPreviewSize(acmsc.getHorizontalResolution(), acmsc.getVerticalResolution())
+                .setRequestedPreviewSize(hr, vr)
                 .setFacing(cameraFacing)
                 .setRequestedFps(30)
                 .setAutoFocusEnabled(true)
@@ -188,7 +188,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
     @Override
     protected void onResume() {
         super.onResume();
-
         startCameraSource();
     }
 
@@ -330,8 +329,12 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
                 new Thread(() -> {
                     boolean faceMatched = sm.startFaceSearchRequest(buffer, fmi);
                     if(!faceMatched) {
+                        // we couldn't recognize this face
                         runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
                         currentFaceId = -1;
+                    } else if(mFaceMatchFragment.contains(fmi.name)) {
+                        // we already have this face, so remove it
+                        runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
                     } else {
                         runOnUiThread(() -> mFaceMatchFragment.notifyDataSetChanged());
                     }

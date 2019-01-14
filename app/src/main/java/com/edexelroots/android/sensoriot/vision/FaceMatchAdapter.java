@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.vision.FaceMatchFragment.OnListFragmentInteractionListener;
-import com.edexelroots.android.sensoriot.vision.dummy.FaceMatchItem;
 
 import java.util.List;
 

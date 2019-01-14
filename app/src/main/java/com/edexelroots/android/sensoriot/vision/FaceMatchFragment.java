@@ -12,9 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.edexelroots.android.sensoriot.R;
-import com.edexelroots.android.sensoriot.vision.dummy.FaceMatchItem;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -80,11 +80,16 @@ public class FaceMatchFragment extends Fragment {
         return view;
     }
 
+    private String threeDots = "...";
     public FaceMatchItem addNewFace(long id, float similarity, Bitmap image) {
-        FaceMatchItem fmi = new FaceMatchItem(id, similarity," ..... ", image);
+        FaceMatchItem fmi = new FaceMatchItem(id, similarity,threeDots, image);
         mItems.add(0, fmi);
         mAdapter.notifyDataSetChanged();
         return fmi;
+    }
+
+    public boolean contains(String externalImageId) {
+        return map.containsKey(externalImageId);
     }
 
     public void removeFace(FaceMatchItem fmi) {
@@ -92,10 +97,16 @@ public class FaceMatchFragment extends Fragment {
         mAdapter.notifyDataSetChanged();
     }
 
+    HashMap<String, FaceMatchItem> map = new HashMap<>();
     public void notifyDataSetChanged() {
+        for(FaceMatchItem f: mItems) {
+            if(f.name.contentEquals(threeDots)) {
+                continue;
+            }
+            map.put(f.name, f);
+        }
         mAdapter.notifyDataSetChanged();
     }
-
 
     @Override
     public void onAttach(Context context) {

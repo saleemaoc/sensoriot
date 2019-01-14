@@ -12,14 +12,14 @@ import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CredentialProvider extends AsyncTask<String, Void, Void> {
+public class CredentialProviderIoT extends AsyncTask<String, Void, Void> {
 
     private Exception exception;
     CognitoCachingCredentialsProvider credentialsProvider = null;
     MqttPublishManager mqttPublishManager = null;
     Context mContext = null;
 
-    public CredentialProvider(MqttPublishManager mpm, Context c) {
+    public CredentialProviderIoT(MqttPublishManager mpm, Context c) {
         this.mContext = c;
         this.mqttPublishManager = mpm;
     }
