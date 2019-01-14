@@ -8,24 +8,38 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Size;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobile.auth.core.IdentityHandler;
 import com.amazonaws.mobile.auth.core.IdentityManager;
 import com.amazonaws.mobile.auth.ui.AuthUIConfiguration;
 import com.amazonaws.mobile.auth.ui.SignInUI;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
 import com.amazonaws.mobile.client.AWSStartupResult;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoDevice;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserSession;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.AuthenticationContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ChallengeContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.MultiFactorAuthenticationContinuation;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.iot.AWSIoTConnectionStatus;
+import com.edexelroots.android.sensoriot.iot.CredentialProvider;
 import com.edexelroots.android.sensoriot.iot.MqttPublishManager;
 import com.edexelroots.android.sensoriot.kinesis.fragments.Camera2BasicFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamConfigurationFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
+import com.edexelroots.android.sensoriot.vision.CredentialProviderRecognition;
 import com.edexelroots.android.sensoriot.vision.FaceTrackerActivity;
 
 import org.apache.http.client.CredentialsProvider;
+import org.w3c.dom.Text;
 
 public class KinesisActivity extends AppCompatActivity {
 
@@ -40,12 +54,13 @@ public class KinesisActivity extends AppCompatActivity {
 
         if(null == savedInstanceState) {
             signInAWSCognito();
-            startConfigFragment();
         }
     }
 
+/*
     MqttPublishManager mPublishManager = null;
     AWSIoTConnectionStatus mConnectionStatus = null;
+*/
 
     protected void signInAWSCognito() {
         AWSMobileClient.getInstance().initialize(this, new AWSStartupHandler() {
@@ -66,12 +81,21 @@ public class KinesisActivity extends AppCompatActivity {
                     SignInUI signInUI = (SignInUI) AWSMobileClient.getInstance().getClient(KinesisActivity.this, SignInUI.class);
                     signInUI.login(KinesisActivity.this, KinesisActivity.class).authUIConfiguration(config).execute();
                 }
-                mConnectionStatus = new AWSIoTConnectionStatus(KinesisActivity.this, findViewById(R.id.tv_connection_status));
-                mPublishManager =  new MqttPublishManager(KinesisActivity.this, mConnectionStatus);
-                mPublishManager.setupSession();
+//                mConnectionStatus = new AWSIoTConnectionStatus(KinesisActivity.this, findViewById(R.id.tv_connection_status));
+//                mPublishManager =  new MqttPublishManager(KinesisActivity.this, mConnectionStatus);
+//                mPublishManager.setupSession();
+                setupSession();
             }
         }).execute();
     }
+
+    public void setupSession() {
+        ((TextView) findViewById(R.id.tv_connection_status)).setText("Please wait...");
+        final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
+        final CognitoUserPool userPool = new CognitoUserPool(this, identityManager.getConfiguration());
+        userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(identityManager));
+    }
+
     public void startFragment(Fragment fragment, String tag) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         if(null == tag) {
@@ -121,6 +145,11 @@ public class KinesisActivity extends AppCompatActivity {
         startActivity(i);
     }
 
+    public void startFaceDetectionActivity() {
+        Intent i = new Intent(this, FaceTrackerActivity.class);
+        startActivity(i);
+    }
+
     public  void startStreamingFragment(Bundle extras) {
         try {
             StreamingFragment f = StreamingFragment.newInstance(this);
@@ -142,4 +171,58 @@ public class KinesisActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    public void credentialsReceived(CognitoCachingCredentialsProvider credentialsProvider) {
+        ((TextView) findViewById(R.id.tv_connection_status)).setText("");
+        findViewById(R.id.progress_bar).setVisibility(View.GONE);
+        startConfigFragment();
+        // startFaceDetectionActivity();
+    }
+
+    private class AWSAuthHandler implements AuthenticationHandler {
+
+        IdentityManager identityManager = null;
+
+        public AWSAuthHandler(IdentityManager im) {
+            this.identityManager = im;
+        }
+
+        @Override
+        public void onSuccess(CognitoUserSession userSession, CognitoDevice newDevice) {
+            final String idToken = userSession.getIdToken().getJWTToken();
+            identityManager.getUserID(new IdentityHandler() {
+                @Override
+                public void onIdentityId(String identityId) {
+                    new CredentialProviderRecognition(KinesisActivity.this).execute(idToken, identityId);
+                }
+
+                @Override
+                public void handleError(Exception exception) {
+                    Utils.logE(getClass().getName(), exception.getMessage());
+                    exception.printStackTrace();
+                }
+            });
+        }
+
+        @Override
+        public void getAuthenticationDetails(AuthenticationContinuation authenticationContinuation, String userId) {
+
+        }
+
+        @Override
+        public void getMFACode(MultiFactorAuthenticationContinuation continuation) {
+
+        }
+
+        @Override
+        public void authenticationChallenge(ChallengeContinuation continuation) {
+
+        }
+
+        @Override
+        public void onFailure(Exception exception) {
+
+        }
+    }
+
 }

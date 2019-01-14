@@ -91,7 +91,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
 
         Bundle b = getIntent().getBundleExtra("config");
-        acmsc = b.getParcelable(StreamingFragment.KEY_MEDIA_SOURCE_CONFIGURATION);
+        if(b != null) {
+            acmsc = b.getParcelable(StreamingFragment.KEY_MEDIA_SOURCE_CONFIGURATION);
+        }
 
         // Check for the camera permission before accessing the camera.  If the
         // permission is not granted yet, request permission.
@@ -166,12 +168,16 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
             mFaceDetector.release();
         }
 
+        int cameraFacing = CameraSource.CAMERA_FACING_BACK;
+        if(acmsc != null) {
+            cameraFacing = acmsc.getCameraFacing();
+        }
+
         mCameraSource = new CameraSource.Builder(context, mFaceDetector)
-//                .setRequestedPreviewSize(640, 480)
-//                .setFacing(CameraSource.CAMERA_FACING_BACK)
-                .setFacing(acmsc.getCameraFacing())
-                .setRequestedPreviewSize(acmsc.getHorizontalResolution(), acmsc.getVerticalResolution())
-                .setRequestedFps(acmsc.getBitRate())
+                .setRequestedPreviewSize(1080, 720)
+//                .setRequestedPreviewSize(acmsc.getHorizontalResolution(), acmsc.getVerticalResolution())
+                .setFacing(cameraFacing)
+                .setRequestedFps(30)
                 .setAutoFocusEnabled(true)
                 .build();
     }
