@@ -1,11 +1,8 @@
-package com.edexelroots.android.sensoriot;
+package com.edexelroots.android.sensoriot.iot;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 
-import com.amazonaws.auth.AWSSessionCredentials;
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.mobile.auth.core.IdentityHandler;
 import com.amazonaws.mobile.auth.core.IdentityManager;
@@ -18,13 +15,9 @@ import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.Mult
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttManager;
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttQos;
-import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.iot.AWSIotClient;
-import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
+import com.edexelroots.android.sensoriot.Utils;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 public class MqttPublishManager {

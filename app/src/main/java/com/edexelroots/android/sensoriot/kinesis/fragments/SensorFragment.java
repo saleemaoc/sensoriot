@@ -26,9 +26,9 @@ import com.amazonaws.mobile.auth.ui.SignInUI;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobile.client.AWSStartupHandler;
 import com.amazonaws.mobile.client.AWSStartupResult;
-import com.edexelroots.android.sensoriot.AWSIoTConnectionStatus;
-import com.edexelroots.android.sensoriot.MainActivity;
-import com.edexelroots.android.sensoriot.MqttPublishManager;
+import com.edexelroots.android.sensoriot.iot.AWSIoTConnectionStatus;
+import com.edexelroots.android.sensoriot.iot.MainActivity;
+import com.edexelroots.android.sensoriot.iot.MqttPublishManager;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.Utils;
 

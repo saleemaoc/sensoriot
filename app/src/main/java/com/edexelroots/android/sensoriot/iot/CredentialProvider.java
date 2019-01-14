@@ -1,4 +1,4 @@
-package com.edexelroots.android.sensoriot;
+package com.edexelroots.android.sensoriot.iot;
 
 
 import android.content.Context;
@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.regions.Region;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.iot.AWSIotClient;
 import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
 

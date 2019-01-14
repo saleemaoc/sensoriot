@@ -1,4 +1,4 @@
-package com.edexelroots.android.sensoriot;
+package com.edexelroots.android.sensoriot.iot;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -18,6 +18,7 @@ import com.amazonaws.mobile.auth.core.IdentityManager;
 import com.amazonaws.mobile.auth.core.IdentityProvider;
 import com.amazonaws.mobile.auth.ui.AuthUIConfiguration;
 import com.amazonaws.mobile.auth.ui.SignInActivity;
+import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 import com.edexelroots.android.sensoriot.kinesis.fragments.SensorFragment;
 

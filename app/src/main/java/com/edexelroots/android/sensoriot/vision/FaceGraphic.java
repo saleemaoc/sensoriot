@@ -13,24 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.android.gms.samples.vision.face.facetracker;
+package com.edexelroots.android.sensoriot.vision;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ImageFormat;
 import android.graphics.Paint;
-import android.graphics.Rect;
-import android.graphics.YuvImage;
-import android.util.SparseArray;
 
-import com.google.android.gms.samples.vision.face.facetracker.ui.camera.GraphicOverlay;
-import com.google.android.gms.vision.Frame;
+import com.edexelroots.android.sensoriot.vision.camera.GraphicOverlay;
 import com.google.android.gms.vision.face.Face;
-
-import java.io.ByteArrayOutputStream;
-import java.nio.ByteBuffer;
 
 /**
  * Graphic instance for rendering face position, orientation, and landmarks within an associated

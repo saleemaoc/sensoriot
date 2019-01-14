@@ -23,7 +23,6 @@ import com.amazonaws.mobileconnectors.kinesisvideo.client.KinesisVideoAndroidCli
 import com.amazonaws.mobileconnectors.kinesisvideo.data.MimeType;
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
 import com.edexelroots.android.sensoriot.SensorIoTApp;
-import com.edexelroots.android.sensoriot.MainActivity;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
@@ -138,23 +137,14 @@ public class StreamConfigurationFragment extends Fragment {
     }
 
     private View.OnClickListener startStreamingActivityWhenClicked() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(final View view) {
-                startStreaming();
-            }
-        };
+        return view -> startStreaming();
     }
 
     private void startStreaming() {
         final Bundle extras = new Bundle();
 
-        Utils.logE(getClass().getName(), "0 Camera Orientation: " + mCamerasDropdown.getSelectedItem().getCameraOrientation());
-
         AndroidCameraMediaSourceConfiguration acmsc = getCurrentConfiguration();
         extras.putParcelable(StreamingFragment.KEY_MEDIA_SOURCE_CONFIGURATION, acmsc);
-        Utils.logE(getClass().getName(), "1 Camera Orientation: " + acmsc.getCameraOrientation());
-
         extras.putString(StreamingFragment.KEY_STREAM_NAME, mStreamName.getText().toString());
 
         // mActivity.startStreamingFragment(extras);
@@ -163,7 +153,6 @@ public class StreamConfigurationFragment extends Fragment {
     }
 
     private AndroidCameraMediaSourceConfiguration getCurrentConfiguration() {
-        Utils.logE(getClass().getName(), "Camera Orientation: " + mCamerasDropdown.getSelectedItem().getCameraOrientation());
         CameraMediaSourceConfiguration.Builder builder = AndroidCameraMediaSourceConfiguration.builder()
                 .withCameraId(mCamerasDropdown.getSelectedItem().getCameraId())
                 .withEncodingMimeType(mMimeTypeDropdown.getSelectedItem().getMimeType())
@@ -174,7 +163,7 @@ public class StreamConfigurationFragment extends Fragment {
                 .withFrameRate(FRAMERATE_20)
                 .withRetentionPeriodInHours(RETENTION_PERIOD_48_HOURS)
                 .withEncodingBitRate(BITRATE_384_KBPS)
-                .withCameraOrientation(-mCamerasDropdown.getSelectedItem().getCameraOrientation())
+                .withCameraOrientation(mCamerasDropdown.getSelectedItem().getCameraOrientation())
                 .withNalAdaptationFlags(StreamInfo.NalAdaptationFlags.NAL_ADAPTATION_ANNEXB_CPD_AND_FRAME_NALS)
                 .withIsAbsoluteTimecode(false);
         return new AndroidCameraMediaSourceConfiguration(builder);

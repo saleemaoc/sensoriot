@@ -8,21 +8,24 @@
     android:layout_height="match_parent"
     android:keepScreenOn="true">
 
-  <ImageView
-      android:id="@+id/cropped"
-      android:layout_width="200dp"
-      android:layout_height="200dp" />
+    <fragment
+        android:id="@+id/fragment_facematch"
+        android:layout_width="200dp"
+        android:layout_height="match_parent"
+        class="com.edexelroots.android.sensoriot.vision.FaceMatchFragment">
+    </fragment>
 
-  <com.google.android.gms.samples.vision.face.facetracker.ui.camera.CameraSourcePreview
+
+  <com.edexelroots.android.sensoriot.vision.camera.CameraSourcePreview
       android:id="@+id/preview"
       android:layout_width="match_parent"
       android:layout_height="match_parent">
 
-    <com.google.android.gms.samples.vision.face.facetracker.ui.camera.GraphicOverlay
+    <com.edexelroots.android.sensoriot.vision.camera.GraphicOverlay
         android:id="@+id/faceOverlay"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-  </com.google.android.gms.samples.vision.face.facetracker.ui.camera.CameraSourcePreview>
+  </com.edexelroots.android.sensoriot.vision.camera.CameraSourcePreview>
 
 </LinearLayout>

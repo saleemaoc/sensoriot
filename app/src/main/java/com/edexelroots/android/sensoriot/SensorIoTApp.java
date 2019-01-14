@@ -21,7 +21,7 @@ public class SensorIoTApp extends Application {
         // this sets the logging level
         // to actually enable logging you also need to run
         //    adb shell setprop log.tag.com.amazonaws.request DEBUG
-        // see https://github.com/aws/aws-sdk-android/blob/master/Logging.html for details
+        // see https://github.com/aws/aws-sdk-android/blob/master/Logging.html for image
         Logger.getLogger("org.apache.http").setLevel(Level.FINEST);
         Logger.getLogger("com.amazonaws").setLevel(Level.FINEST);
 

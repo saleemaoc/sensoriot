@@ -1,14 +1,12 @@
 package com.edexelroots.android.sensoriot;
 
 //Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-//PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazon-rekognition-developer-guide/blob/master/LICENSE-SAMPLECODE.)
+//PDX-License-Identifier: MIT-0 (For image, see https://github.com/awsdocs/amazon-rekognition-developer-guide/blob/master/LICENSE-SAMPLECODE.)
 
 // Stream manager class. Provides methods for calling
 // Stream Processor operations.
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.widget.Toast;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.regions.Region;
@@ -33,7 +31,6 @@ import com.amazonaws.services.rekognition.model.ResourceInUseException;
 import com.amazonaws.services.rekognition.model.ResourceNotFoundException;
 import com.amazonaws.services.rekognition.model.SearchFacesByImageRequest;
 import com.amazonaws.services.rekognition.model.SearchFacesByImageResult;
-import com.amazonaws.services.rekognition.model.StartFaceSearchRequest;
 import com.amazonaws.services.rekognition.model.StartStreamProcessorRequest;
 import com.amazonaws.services.rekognition.model.StartStreamProcessorResult;
 import com.amazonaws.services.rekognition.model.StopStreamProcessorRequest;
@@ -43,6 +40,8 @@ import com.amazonaws.services.rekognition.model.StreamProcessorInput;
 import com.amazonaws.services.rekognition.model.StreamProcessorOutput;
 import com.amazonaws.services.rekognition.model.StreamProcessorSettings;
 import com.amazonaws.services.rekognition.model.StreamProcessorStatus;
+import com.edexelroots.android.sensoriot.iot.MqttPublishManager;
+import com.edexelroots.android.sensoriot.vision.dummy.FaceMatchItem;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -120,8 +119,7 @@ public class StreamManager {
         }
     }
 
-    public boolean startFaceSearchRequest(ByteBuffer byteBuffer) throws InvalidParameterException {
-        Utils.logE(getClass().getName(), "ByteBuffer size: ");
+    public boolean startFaceSearchRequest(ByteBuffer byteBuffer, FaceMatchItem faceMatchItem) throws InvalidParameterException {
         Image image = new Image().withBytes(byteBuffer);
         SearchFacesByImageRequest sfbir = new SearchFacesByImageRequest()
                 .withImage(image)
@@ -132,10 +130,11 @@ public class StreamManager {
         List<FaceMatch> faceImageMatches = new ArrayList<>();
         try {
             SearchFacesByImageResult sfbi = rekognitionClient.searchFacesByImage(sfbir);
-            Utils.logE(getClass().getName(), "Faces matching largest face in image from");
             faceImageMatches = sfbi.getFaceMatches();
             for (FaceMatch face : faceImageMatches) {
-                Utils.logE(getClass().getName(), face.getFace().getExternalImageId());
+                faceMatchItem.name = face.getFace().getExternalImageId();
+                faceMatchItem.similarity = face.getSimilarity();
+                Utils.logE(getClass().getName(), faceMatchItem.name);
             }
         } catch (Exception e) {
             e.printStackTrace();

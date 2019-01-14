@@ -1,10 +1,11 @@
-package com.edexelroots.android.sensoriot;
+package com.edexelroots.android.sensoriot.iot;
 
 import android.app.Activity;
 import android.support.annotation.NonNull;
 import android.widget.TextView;
 
 import com.amazonaws.mobileconnectors.iot.AWSIotMqttClientStatusCallback;
+import com.edexelroots.android.sensoriot.Utils;
 
 public class AWSIoTConnectionStatus implements AWSIotMqttClientStatusCallback {
 

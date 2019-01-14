@@ -1,7 +1,6 @@
-package com.google.android.gms.samples.vision.face.facetracker;
+package com.edexelroots.android.sensoriot.vision;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
@@ -40,7 +39,6 @@ public class MyFaceDetector extends Detector {
         int w = frame.getMetadata().getWidth();
         int h = frame.getMetadata().getHeight();
 
-        final Bitmap bitmap;
         ByteBuffer byteBufferRaw = frame.getGrayscaleImageData();
         byte[] byteBuffer = byteBufferRaw.array();
         YuvImage yuvimage  = new YuvImage(byteBuffer, ImageFormat.NV21, w, h, null);
@@ -56,9 +54,9 @@ public class MyFaceDetector extends Detector {
 
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                yuvimage.compressToJpeg(new Rect(left, top, right, bottom), 80, baos);
+                yuvimage.compressToJpeg(new Rect(left, top, right, bottom), 90, baos);
                 byte[] jpegArray = baos.toByteArray();
-                fta.runOnUiThread(() -> fta.faceToImageView(jpegArray, byteBufferRaw, face.getId()));
+                fta.runOnUiThread(() -> fta.faceToImageView(jpegArray, face.getId()));
             }catch (Exception e) {
                 e.printStackTrace();
             }

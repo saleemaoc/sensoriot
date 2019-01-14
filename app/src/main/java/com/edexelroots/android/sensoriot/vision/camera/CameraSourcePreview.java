@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.android.gms.samples.vision.face.facetracker.ui.camera;
+package com.edexelroots.android.sensoriot.vision.camera;
 
 import android.Manifest;
 import android.content.Context;
@@ -93,7 +93,7 @@ public class CameraSourcePreview extends ViewGroup {
                 //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
                 //                                          int[] grantResults)
                 // to handle the case where the user grants the permission. See the documentation
-                // for ActivityCompat#requestPermissions for more details.
+                // for ActivityCompat#requestPermissions for more image.
                 return;
             }
             mCameraSource.start(mSurfaceView.getHolder());

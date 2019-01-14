@@ -14,7 +14,7 @@ import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.fragments.Camera2BasicFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamConfigurationFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
-import com.google.android.gms.samples.vision.face.facetracker.FaceTrackerActivity;
+import com.edexelroots.android.sensoriot.vision.FaceTrackerActivity;
 
 public class KinesisActivity extends AppCompatActivity {
 

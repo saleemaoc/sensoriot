@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.android.gms.samples.vision.face.facetracker;
+package com.edexelroots.android.sensoriot.vision;
 
 import android.Manifest;
 import android.app.Activity;
@@ -28,18 +28,18 @@ import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Base64;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
-import com.edexelroots.android.sensoriot.Constants;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.StreamManager;
-import com.edexelroots.android.sensoriot.kinesis.fragments.StreamConfigurationFragment;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
+import com.edexelroots.android.sensoriot.vision.dummy.FaceMatchItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.CameraSource;
@@ -48,8 +48,8 @@ import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
-import com.google.android.gms.samples.vision.face.facetracker.ui.camera.CameraSourcePreview;
-import com.google.android.gms.samples.vision.face.facetracker.ui.camera.GraphicOverlay;
+import com.edexelroots.android.sensoriot.vision.camera.CameraSourcePreview;
+import com.edexelroots.android.sensoriot.vision.camera.GraphicOverlay;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -59,7 +59,7 @@ import java.nio.ByteBuffer;
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
  */
-public final class FaceTrackerActivity extends AppCompatActivity {
+public final class FaceTrackerActivity extends AppCompatActivity implements FaceMatchFragment.OnListFragmentInteractionListener {
     private static final String TAG = "FaceTracker";
 
     private CameraSource mCameraSource = null;
@@ -72,6 +72,8 @@ public final class FaceTrackerActivity extends AppCompatActivity {
     private static final int RC_HANDLE_CAMERA_PERM = 2;
     MyFaceDetector mFaceDetector;
     AndroidCameraMediaSourceConfiguration acmsc;
+
+    FaceMatchFragment mFaceMatchFragment = null;
 
     //==============================================================================================
     // Activity Methods
@@ -288,37 +290,53 @@ public final class FaceTrackerActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public View onCreateView(String name, Context context, AttributeSet attrs) {
+        View view = super.onCreateView(name, context, attrs);
+        mFaceMatchFragment = (FaceMatchFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_facematch);
+        return view;
+    }
+
     private int currentFaceId = -1;
-    public void faceToImageView(byte[] bytes, ByteBuffer raw, int faceId) {
-        ImageView iv = findViewById(R.id.cropped);
-        if(iv != null){
-            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-            iv.setImageBitmap(bitmap);
+    public void faceToImageView(byte[] bytes, int faceId) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-            byte[] byteArray = byteArrayOutputStream .toByteArray();
-            // String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-            ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        byte[] byteArray = byteArrayOutputStream .toByteArray();
+        // String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
-            StreamManager sm = new StreamManager(this);
+        ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+        StreamManager sm = new StreamManager(this);
+        FaceDetector detector = new FaceDetector.Builder(this)
+                .setTrackingEnabled(true)
+                .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
+                .build();
+        Frame frame = new Frame.Builder().setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length)).build();
+        SparseArray faces = detector.detect(frame);
+        boolean hasAFace = faces.size() > 0;
 
-            FaceDetector detector = new FaceDetector.Builder(this)
-                    .setTrackingEnabled(true)
-                    .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
-                    .build();
-            Frame frame = new Frame.Builder().setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length)).build();
-            SparseArray faces = detector.detect(frame);
-            boolean hasAFace = faces.size() > 0;
-
-            if (hasAFace && faceId != currentFaceId) {
-                currentFaceId = faceId;
-                new Thread(() -> sm.startFaceSearchRequest(buffer)).start();
+        if (hasAFace && faceId != currentFaceId) {
+            currentFaceId = faceId;
+            if(mFaceMatchFragment != null) {
+                FaceMatchItem fmi = mFaceMatchFragment.addNewFace(faceId,0f, bitmap);
+                new Thread(() -> {
+                    boolean faceMatched = sm.startFaceSearchRequest(buffer, fmi);
+                    if(!faceMatched) {
+                        runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
+                        currentFaceId = -1;
+                    } else {
+                        runOnUiThread(() -> mFaceMatchFragment.notifyDataSetChanged());
+                    }
+                }).start();
             }
         }
-        if(mFaceTracker != null) {
-            mFaceTracker.done();
-        }
+
+    }
+
+    @Override
+    public void onListFragmentInteraction(FaceMatchItem item) {
+        Toast.makeText(this, item.name, Toast.LENGTH_SHORT).show();
     }
     //==============================================================================================
     // Graphic Face Tracker
