@@ -5,16 +5,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.YuvImage;
 import android.util.SparseArray;
 
-import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
-import com.google.android.gms.vision.face.FaceDetector;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -66,7 +63,7 @@ public class MyFaceDetector extends Detector {
                 if(!r.isEmpty()) {
                     yuvimage.compressToJpeg(r, 90, baos);
                     byte[] jpegArray = baos.toByteArray();
-                    fta.runOnUiThread(() -> fta.faceToImageView(jpegArray, face.getId()));
+                    fta.runOnUiThread(() -> fta.faceToImageViewLandscape(jpegArray, face.getId()));
                 }
             }catch (Exception e) {
                 e.printStackTrace();
@@ -118,7 +115,7 @@ public class MyFaceDetector extends Detector {
                     bitmap = rotateBitmap(-90, clipped);
 
                     Bitmap finalBitmap = bitmap;
-                    fta.runOnUiThread(() -> fta.faceToImageView2(finalBitmap, face.getId()));
+                    fta.runOnUiThread(() -> fta.faceToImageViewPortrait(finalBitmap, face.getId()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

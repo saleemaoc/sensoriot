@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Size;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +48,8 @@ public class KinesisActivity extends AppCompatActivity {
 
         if(null == savedInstanceState) {
             signInAWSCognito();
+        } else {
+            hideProgress();
         }
     }
 
@@ -145,11 +148,11 @@ public class KinesisActivity extends AppCompatActivity {
 
     private void hideProgress() {
         findViewById(R.id.progress_bar).setVisibility(View.GONE);
+        findViewById(R.id.btn_scanning).setEnabled(true);
     }
 
     public void startConfigFragment() {
         Utils.logE(getClass().getName(), "Start Config Fragment");
-        hideProgress();
         try {
             StreamConfigurationFragment f = StreamConfigurationFragment.newInstance(this);
             startFragment(f, null);
@@ -161,7 +164,11 @@ public class KinesisActivity extends AppCompatActivity {
 
     public void credentialsReceived(CognitoCachingCredentialsProvider credentialsProvider) {
         ((TextView) findViewById(R.id.tv_connection_status)).setText("");
-        startConfigFragment();
+        hideProgress();
+    }
+
+    public void startScanning(View view) {
+        startFaceDetectionActivity();
     }
 
     private class AWSAuthHandler implements AuthenticationHandler {

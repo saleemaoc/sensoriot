@@ -22,9 +22,20 @@
 
             <ProgressBar
                 android:id="@+id/progress_bar"
-                android:layout_centerInParent="true"
+                android:layout_centerHorizontal="true"
+                android:layout_above="@id/btn_scanning"
                 android:layout_width="60dp"
                 android:layout_height="60dp" />
+
+            <Button
+                android:id="@+id/btn_scanning"
+                android:layout_centerInParent="true"
+                android:enabled="false"
+                android:onClick="startScanning"
+                android:text="Start Scanning"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
         </RelativeLayout>
 
     </android.support.constraint.ConstraintLayout>

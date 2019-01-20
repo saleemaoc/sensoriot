@@ -311,21 +311,13 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
     }
 
     private int currentFaceId = -1;
-    public void faceToImageView(byte[] bytes, int faceId) {
-
+    public void faceToImageViewLandscape(byte[] bytes, int faceId) {
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        if(Utils.isPortraitMode(this)) {
-            bitmap = rotateBitmap(bitmap, 90);
-        }
 
         byte[] byteArray = byteArrayOutputStream .toByteArray();
-        // String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-        StreamManager sm = new StreamManager(this);
         FaceDetector detector = new FaceDetector.Builder(this)
                 .setTrackingEnabled(true)
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
@@ -335,45 +327,17 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
                 .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length))
                 .build();
         SparseArray faces = detector.detect(frame);
-
-        boolean hasAFace = true;//= faces.size() > 0;
-
-        if (hasAFace && faceId != currentFaceId) {
-            Utils.logE(getClass().getName(), "Has a face and faceId != currentFaceId");
-
-            currentFaceId = faceId;
-            if(mFaceMatchFragment != null) {
-                FaceMatchItem fmi = mFaceMatchFragment.addNewFace(faceId,0f, bitmap);
-                new Thread(() -> {
-                    boolean faceMatched = sm.startFaceSearchRequest(buffer, fmi);
-                    if(!faceMatched) {
-                        // we couldn't recognize this face
-                        runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
-                        currentFaceId = -1;
-                    } else if(mFaceMatchFragment.contains(fmi.name)) {
-                        // we already have this face, so remove it
-                        runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
-                    } else {
-                        runOnUiThread(() -> mFaceMatchFragment.notifyDataSetChanged());
-                    }
-                }).start();
-            }
+        if(faces.size() > 0) {
+            addFaceToList(faceId, buffer, bitmap);
         }
-        Utils.logE(getClass().getName(), "hasAFace = " + hasAFace + ", " + currentFaceId + ", " + faceId);
     }
-    public void faceToImageView2(Bitmap bitmap, int faceId) {
-
+    public void faceToImageViewPortrait(Bitmap bitmap, int faceId) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        if(Utils.isPortraitMode(this)) {
-            bitmap = rotateBitmap(bitmap, 90);
-        }
+        bitmap = rotateBitmap(bitmap, 90);
 
         byte[] byteArray = byteArrayOutputStream .toByteArray();
-        // String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);
-        StreamManager sm = new StreamManager(this);
         FaceDetector detector = new FaceDetector.Builder(this)
                 .setTrackingEnabled(true)
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
@@ -382,17 +346,20 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
                 .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length))
                 .build();
         SparseArray faces = detector.detect(frame);
+        if(faces.size() > 0) {
+            addFaceToList(faceId, buffer, bitmap);
+        }
+    }
 
-        boolean hasAFace = true;//= faces.size() > 0;
-
-        if (hasAFace && faceId != currentFaceId) {
+    private void addFaceToList(int faceId, ByteBuffer buffer, Bitmap bitmap){
+        if (faceId != currentFaceId) {
             Utils.logE(getClass().getName(), "Has a face and faceId != currentFaceId");
 
             currentFaceId = faceId;
             if(mFaceMatchFragment != null) {
                 FaceMatchItem fmi = mFaceMatchFragment.addNewFace(faceId,0f, bitmap);
                 new Thread(() -> {
-                    boolean faceMatched = sm.startFaceSearchRequest(buffer, fmi);
+                    boolean faceMatched = new StreamManager(this).startFaceSearchRequest(buffer, fmi);
                     if(!faceMatched) {
                         // we couldn't recognize this face
                         runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
@@ -406,9 +373,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
                 }).start();
             }
         }
-        Utils.logE(getClass().getName(), "hasAFace = " + hasAFace + ", " + currentFaceId + ", " + faceId);
     }
-
     @Override
     public void onListFragmentInteraction(FaceMatchItem item) {
         Toast.makeText(this, item.name, Toast.LENGTH_SHORT).show();

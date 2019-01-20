@@ -84,7 +84,6 @@ public class FaceMatchFragment extends Fragment {
     public FaceMatchItem addNewFace(long id, float similarity, Bitmap image) {
         FaceMatchItem fmi = new FaceMatchItem(id, similarity,threeDots, image);
         mItems.add(0, fmi);
-        mAdapter.notifyDataSetChanged();
         return fmi;
     }
 
