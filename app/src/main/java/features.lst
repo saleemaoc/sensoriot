@@ -1,0 +1,8 @@
+done - Make it work on portrait as well. Faces list on the bottom
+- One photo with highest similarity % for one person (fix)
+- Set default settings for codec, back facing camera and camera resolution
+- Modify user interface. Add "Start Scanning" button
+- Integrate your API
+- Trigger a notification when it recognizes someone
+- Test and debug to fix crashes and cleanup
+- User Interface Design

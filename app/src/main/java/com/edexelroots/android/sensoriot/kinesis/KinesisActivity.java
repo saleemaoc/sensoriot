@@ -127,6 +127,11 @@ public class KinesisActivity extends AppCompatActivity {
         startActivity(i);
     }
 
+    public void startFaceDetectionActivity() {
+        Intent i = new Intent(this, FaceTrackerActivity.class);
+        startActivity(i);
+    }
+
     public  void startStreamingFragment(Bundle extras) {
         try {
             StreamingFragment f = StreamingFragment.newInstance(this);
@@ -138,12 +143,16 @@ public class KinesisActivity extends AppCompatActivity {
         }
     }
 
+    private void hideProgress() {
+        findViewById(R.id.progress_bar).setVisibility(View.GONE);
+    }
+
     public void startConfigFragment() {
         Utils.logE(getClass().getName(), "Start Config Fragment");
+        hideProgress();
         try {
             StreamConfigurationFragment f = StreamConfigurationFragment.newInstance(this);
             startFragment(f, null);
-            findViewById(R.id.progress_bar).setVisibility(View.GONE);
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "Could not config", Toast.LENGTH_SHORT).show();
             e.printStackTrace();

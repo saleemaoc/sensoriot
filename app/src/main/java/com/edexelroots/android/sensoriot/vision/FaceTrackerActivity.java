@@ -24,6 +24,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -37,6 +38,7 @@ import android.widget.Toast;
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.StreamManager;
+import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -167,7 +169,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
         }
 
         int cameraFacing = CameraSource.CAMERA_FACING_BACK;
-        int hr = 1280, vr = 960;
+        int hr = 720, vr = 720;
         if(acmsc != null) {
             cameraFacing = acmsc.getCameraFacing();
             hr = acmsc.getHorizontalResolution();
@@ -258,7 +260,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
         };
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Face Tracker sample")
+        builder.setTitle("Face Tracker")
                 .setMessage(R.string.no_camera_permission)
                 .setPositiveButton(R.string.ok, listener)
                 .show();
@@ -302,12 +304,23 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
         return view;
     }
 
+    public static Bitmap rotateBitmap(Bitmap source, float angle) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(angle);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+    }
+
     private int currentFaceId = -1;
     public void faceToImageView(byte[] bytes, int faceId) {
+
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        if(Utils.isPortraitMode(this)) {
+            bitmap = rotateBitmap(bitmap, 90);
+        }
+
         byte[] byteArray = byteArrayOutputStream .toByteArray();
         // String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
 
@@ -317,12 +330,17 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
                 .setTrackingEnabled(true)
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .build();
-        Frame frame = new Frame.Builder().setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length)).build();
+        Frame frame = new Frame.Builder()
+                .setRotation(90)
+                .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length))
+                .build();
         SparseArray faces = detector.detect(frame);
 
-        boolean hasAFace = faces.size() > 0;
+        boolean hasAFace = true;//= faces.size() > 0;
 
         if (hasAFace && faceId != currentFaceId) {
+            Utils.logE(getClass().getName(), "Has a face and faceId != currentFaceId");
+
             currentFaceId = faceId;
             if(mFaceMatchFragment != null) {
                 FaceMatchItem fmi = mFaceMatchFragment.addNewFace(faceId,0f, bitmap);
@@ -341,7 +359,54 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
                 }).start();
             }
         }
+        Utils.logE(getClass().getName(), "hasAFace = " + hasAFace + ", " + currentFaceId + ", " + faceId);
+    }
+    public void faceToImageView2(Bitmap bitmap, int faceId) {
 
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        if(Utils.isPortraitMode(this)) {
+            bitmap = rotateBitmap(bitmap, 90);
+        }
+
+        byte[] byteArray = byteArrayOutputStream .toByteArray();
+        // String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+
+        ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+        StreamManager sm = new StreamManager(this);
+        FaceDetector detector = new FaceDetector.Builder(this)
+                .setTrackingEnabled(true)
+                .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
+                .build();
+        Frame frame = new Frame.Builder()
+                .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length))
+                .build();
+        SparseArray faces = detector.detect(frame);
+
+        boolean hasAFace = true;//= faces.size() > 0;
+
+        if (hasAFace && faceId != currentFaceId) {
+            Utils.logE(getClass().getName(), "Has a face and faceId != currentFaceId");
+
+            currentFaceId = faceId;
+            if(mFaceMatchFragment != null) {
+                FaceMatchItem fmi = mFaceMatchFragment.addNewFace(faceId,0f, bitmap);
+                new Thread(() -> {
+                    boolean faceMatched = sm.startFaceSearchRequest(buffer, fmi);
+                    if(!faceMatched) {
+                        // we couldn't recognize this face
+                        runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
+                        currentFaceId = -1;
+                    } else if(mFaceMatchFragment.contains(fmi.name)) {
+                        // we already have this face, so remove it
+                        runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
+                    } else {
+                        runOnUiThread(() -> mFaceMatchFragment.notifyDataSetChanged());
+                    }
+                }).start();
+            }
+        }
+        Utils.logE(getClass().getName(), "hasAFace = " + hasAFace + ", " + currentFaceId + ", " + faceId);
     }
 
     @Override
@@ -420,5 +485,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
         public void onDone() {
             mOverlay.remove(mFaceGraphic);
         }
+
     }
 }

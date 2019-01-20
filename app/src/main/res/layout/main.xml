@@ -4,14 +4,16 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/topLayout"
     android:orientation="vertical"
+    android:weightSum="1"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:keepScreenOn="true">
 
   <com.edexelroots.android.sensoriot.vision.camera.CameraSourcePreview
       android:id="@+id/preview"
+      android:layout_weight="0.6"
       android:layout_width="match_parent"
-      android:layout_height="match_parent">
+      android:layout_height="0dp">
 
     <com.edexelroots.android.sensoriot.vision.camera.GraphicOverlay
         android:id="@+id/faceOverlay"
@@ -19,6 +21,15 @@
         android:layout_height="match_parent" />
 
   </com.edexelroots.android.sensoriot.vision.camera.CameraSourcePreview>
+
+  <fragment
+      android:id="@+id/fragment_facematch"
+      android:layout_weight="0.4"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      class="com.edexelroots.android.sensoriot.vision.FaceMatchFragment">
+  </fragment>
+
 
 
 
