@@ -55,6 +55,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+
 /**
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
@@ -323,7 +324,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .build();
         Frame frame = new Frame.Builder()
-                .setRotation(90)
                 .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length))
                 .build();
         SparseArray faces = detector.detect(frame);
@@ -346,34 +346,31 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
                 .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length))
                 .build();
         SparseArray faces = detector.detect(frame);
-        if(faces.size() > 0) {
+//        if(faces.size() > 0) {
             addFaceToList(faceId, buffer, bitmap);
-        }
+//        }
     }
 
     private void addFaceToList(int faceId, ByteBuffer buffer, Bitmap bitmap){
         if (faceId != currentFaceId) {
-            Utils.logE(getClass().getName(), "Has a face and faceId != currentFaceId");
-
             currentFaceId = faceId;
             if(mFaceMatchFragment != null) {
-                FaceMatchItem fmi = mFaceMatchFragment.addNewFace(faceId,0f, bitmap);
+                FaceMatchItem fmi = new FaceMatchItem("", 0, "", bitmap);
                 new Thread(() -> {
                     boolean faceMatched = new StreamManager(this).startFaceSearchRequest(buffer, fmi);
                     if(!faceMatched) {
                         // we couldn't recognize this face
-                        runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
                         currentFaceId = -1;
-                    } else if(mFaceMatchFragment.contains(fmi.name)) {
-                        // we already have this face, so remove it
-                        runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
                     } else {
-                        runOnUiThread(() -> mFaceMatchFragment.notifyDataSetChanged());
+                        runOnUiThread(() -> {
+                            mFaceMatchFragment.addNewFace(fmi);
+                        });
                     }
                 }).start();
             }
         }
     }
+
     @Override
     public void onListFragmentInteraction(FaceMatchItem item) {
         Toast.makeText(this, item.name, Toast.LENGTH_SHORT).show();

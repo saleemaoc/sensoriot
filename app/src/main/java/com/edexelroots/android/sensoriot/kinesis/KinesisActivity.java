@@ -77,6 +77,7 @@ public class KinesisActivity extends AppCompatActivity {
     public void setupSession() {
         ((TextView) findViewById(R.id.tv_connection_status)).setText("Please wait...");
         final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
+
         final CognitoUserPool userPool = new CognitoUserPool(this, identityManager.getConfiguration());
         userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(identityManager));
     }

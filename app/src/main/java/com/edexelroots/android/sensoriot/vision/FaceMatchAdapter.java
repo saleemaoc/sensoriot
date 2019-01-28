@@ -4,6 +4,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -11,6 +12,7 @@ import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.vision.FaceMatchFragment.OnListFragmentInteractionListener;
 
 import java.util.List;
+
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link FaceMatchItem} and makes a call to the
@@ -39,8 +41,9 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mNameView.setText(holder.mItem.name + "  (" + holder.mItem.similarity + ")");
+
+        holder.mCounter.setText(holder.mItem.counter + "");
         holder.mImageView.setImageBitmap(holder.mItem.image);
-        // holder.mImageView.setText(mValues.get(position).name);
 
         holder.mView.setOnClickListener(v -> {
             if (null != mListener) {
@@ -61,12 +64,16 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
         public final TextView mNameView;
         public final ImageView mImageView;
         public FaceMatchItem mItem;
+        public final View mHighlightView;
+        public final TextView mCounter;
 
         public ViewHolder(View view) {
             super(view);
             mView = view;
             mNameView = view.findViewById(R.id.name);
             mImageView = view.findViewById(R.id.cropped);
+            mCounter = view.findViewById(R.id.counter);
+            this.mHighlightView = view.findViewById(R.id.highlight_view);
         }
 
         @Override
@@ -74,4 +81,8 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
             return super.toString() + " '" + mNameView.getText() + "'";
         }
     }
+
+
+
+
 }

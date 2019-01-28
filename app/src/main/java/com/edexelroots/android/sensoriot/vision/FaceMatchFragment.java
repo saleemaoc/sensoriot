@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.edexelroots.android.sensoriot.R;
+import com.edexelroots.android.sensoriot.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +58,7 @@ public class FaceMatchFragment extends Fragment {
         }
     }
 
-    List<FaceMatchItem> mItems = new ArrayList<>();
+    public static List<FaceMatchItem> mItems = new ArrayList<>();
     FaceMatchAdapter mAdapter = null;
 
     @Override
@@ -80,15 +81,37 @@ public class FaceMatchFragment extends Fragment {
         return view;
     }
 
-    private String threeDots = "...";
-    public FaceMatchItem addNewFace(long id, float similarity, Bitmap image) {
+    private String threeDots = " Loading ... ";
+
+    public FaceMatchItem addNewFace(String id, float similarity, Bitmap image) {
         FaceMatchItem fmi = new FaceMatchItem(id, similarity,threeDots, image);
         mItems.add(0, fmi);
         return fmi;
     }
 
-    public boolean contains(String externalImageId) {
-        return map.containsKey(externalImageId);
+    public void addNewFace(FaceMatchItem fmi) {
+        FaceMatchItem existing = null;
+        for(FaceMatchItem i : mItems) {
+            if(i.awsFaceId.contentEquals(fmi.awsFaceId)) {
+                // already have recognized this face..
+                Utils.logE(getClass().getName(), "Face already exists");
+                existing = i;
+                break;
+            }
+        }
+        if(existing == null) {
+            Utils.logE(getClass().getName(), "Adding Face to List");
+            mItems.add(0, fmi);
+            notifyDataSetChanged();
+        } else if (existing.similarity < fmi.similarity) {
+            existing.similarity = fmi.similarity;
+            existing.image = fmi.image;
+            existing.blink = true;
+            notifyDataSetChanged();
+        } else {
+            existing.counter++;
+            notifyDataSetChanged();
+        }
     }
 
     public void removeFace(FaceMatchItem fmi) {
@@ -98,12 +121,14 @@ public class FaceMatchFragment extends Fragment {
 
     HashMap<String, FaceMatchItem> map = new HashMap<>();
     public void notifyDataSetChanged() {
+/*
         for(FaceMatchItem f: mItems) {
             if(f.name.contentEquals(threeDots)) {
                 continue;
             }
             map.put(f.name, f);
         }
+*/
         mAdapter.notifyDataSetChanged();
     }
 

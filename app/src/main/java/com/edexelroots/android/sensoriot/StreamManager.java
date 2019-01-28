@@ -132,6 +132,7 @@ public class StreamManager {
             SearchFacesByImageResult sfbi = rekognitionClient.searchFacesByImage(sfbir);
             faceImageMatches = sfbi.getFaceMatches();
             for (FaceMatch face : faceImageMatches) {
+                faceMatchItem.awsFaceId = face.getFace().getFaceId();
                 faceMatchItem.name = face.getFace().getExternalImageId();
                 faceMatchItem.similarity = face.getSimilarity();
                 Utils.logE(getClass().getName(), faceMatchItem.name);

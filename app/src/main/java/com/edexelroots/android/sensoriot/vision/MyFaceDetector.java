@@ -45,7 +45,6 @@ public class MyFaceDetector extends Detector {
 
 
         if(faces.size() > 0) {
-            Utils.logE(getClass().getName(), "Faces size is 1 or more");
             Face face = faces.valueAt(0);
             int x = (int) face.getPosition().x;
             int y = (int) face.getPosition().y;
@@ -102,7 +101,6 @@ public class MyFaceDetector extends Detector {
             SparseArray<Face> faces = mDelegate.detect(frame2);
 
             if (faces.size() > 0) {
-                Utils.logE(getClass().getName(), "Faces size is 1 or more");
                 Face face = faces.valueAt(0);
                 int left = (int) face.getPosition().x - extensionOffset;
                 int top = (int) face.getPosition().y - extensionOffset;

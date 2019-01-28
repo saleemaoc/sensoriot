@@ -10,16 +10,19 @@ import android.graphics.Bitmap;
  */
 public class FaceMatchItem{
 
-    public float similarity = 0f;
-    public final long id;
-    public String name;
-    public final Bitmap image;
+    public boolean blink = false;
 
-    public FaceMatchItem(long id, float similarity, String name, Bitmap img) {
-        this.id = id;
+    public String awsFaceId;
+    public String name;
+    public Bitmap image;
+    public float similarity = 0f;
+    public int counter = 1;
+
+    public FaceMatchItem(String awsFaceId, float similarity, String name, Bitmap img) {
         this.similarity = similarity;
         this.name = name;
         this.image = img;
+        this.awsFaceId = awsFaceId;
     }
 
     @Override
