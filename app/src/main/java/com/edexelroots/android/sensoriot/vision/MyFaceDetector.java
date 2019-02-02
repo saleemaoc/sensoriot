@@ -21,14 +21,16 @@ public class MyFaceDetector extends Detector {
     private Detector<Face> mDelegate;
 
     FaceTrackerActivity fta;
+
     MyFaceDetector(Detector<Face> delegate, FaceTrackerActivity activity) {
         mDelegate = delegate;
         fta = activity;
     }
 
     private int extensionOffset = 0;
+
     public SparseArray<Face> detect(Frame frame) {
-        if(Utils.isPortraitMode(fta)) {
+        if (Utils.isPortraitMode(fta)) {
             return getFacesPortrait(frame);
         }
         return getFacesLandscape(frame);
@@ -41,30 +43,30 @@ public class MyFaceDetector extends Detector {
 
         ByteBuffer byteBufferRaw = frame.getGrayscaleImageData();
         byte[] byteBuffer = byteBufferRaw.array();
-        YuvImage yuvimage  = new YuvImage(byteBuffer, ImageFormat.NV21, w, h, null);
+        YuvImage yuvimage = new YuvImage(byteBuffer, ImageFormat.NV21, w, h, null);
 
 
-        if(faces.size() > 0) {
+        if (faces.size() > 0) {
             Face face = faces.valueAt(0);
             int x = (int) face.getPosition().x;
             int y = (int) face.getPosition().y;
             int width = (int) face.getWidth();
             int height = (int) face.getHeight();
 
-            int left =  x - extensionOffset;
-            int top =  y - extensionOffset;
-            int right =  left + width + extensionOffset;
+            int left = x - extensionOffset;
+            int top = y - extensionOffset;
+            int right = left + width + extensionOffset;
             int bottom = top + height + extensionOffset;
 
             try {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 Rect r = new Rect(left, top, right, bottom);
-                if(!r.isEmpty()) {
+                if (!r.isEmpty()) {
                     yuvimage.compressToJpeg(r, 90, baos);
                     byte[] jpegArray = baos.toByteArray();
                     fta.runOnUiThread(() -> fta.faceToImageViewLandscape(jpegArray, face.getId()));
                 }
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -78,8 +80,8 @@ public class MyFaceDetector extends Detector {
 
         ByteBuffer byteBufferRaw = frame.getGrayscaleImageData();
         byte[] byteBuffer = byteBufferRaw.array();
-        YuvImage yuvimage  = new YuvImage(byteBuffer, ImageFormat.NV21, w, h, null);
-        int right =  frame.getMetadata().getWidth() ;
+        YuvImage yuvimage = new YuvImage(byteBuffer, ImageFormat.NV21, w, h, null);
+        int right = frame.getMetadata().getWidth();
         int bottom = frame.getMetadata().getHeight();
 
         try {
@@ -118,13 +120,13 @@ public class MyFaceDetector extends Detector {
                     e.printStackTrace();
                 }
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return faces2;
     }
 
-    private Bitmap rotateBitmap(int angle, Bitmap bitmap){
+    private Bitmap rotateBitmap(int angle, Bitmap bitmap) {
         Matrix matrix = new Matrix();
         matrix.postRotate(angle);
         Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);

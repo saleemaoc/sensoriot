@@ -16,6 +16,9 @@
 package com.edexelroots.android.sensoriot.vision;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -24,8 +27,11 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.os.Bundle;
+import android.os.PersistableBundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -33,12 +39,27 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobile.auth.core.IdentityManager;
+import com.amazonaws.mobile.auth.ui.AuthUIConfiguration;
+import com.amazonaws.mobile.auth.ui.SignInUI;
+import com.amazonaws.mobile.client.AWSMobileClient;
+import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
+import com.edexelroots.android.sensoriot.CredentialsReciever;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
+import com.edexelroots.android.sensoriot.kinesis.AWSAuthHandler;
+import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -60,7 +81,8 @@ import java.nio.ByteBuffer;
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
  */
-public final class FaceTrackerActivity extends AppCompatActivity implements FaceMatchFragment.OnListFragmentInteractionListener {
+public final class FaceTrackerActivity extends AppCompatActivity
+        implements FaceMatchFragment.OnListFragmentInteractionListener, CredentialsReciever {
     private static final String TAG = "FaceTracker";
 
     private CameraSource mCameraSource = null;
@@ -76,6 +98,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
 
     FaceMatchFragment mFaceMatchFragment = null;
 
+    boolean previewShown = false;
+    private final String KEY_PREVIEW_SHOWN = "preview_shown";
+
     //==============================================================================================
     // Activity Methods
     //==============================================================================================
@@ -90,9 +115,18 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
 
         mPreview = (CameraSourcePreview) findViewById(R.id.preview);
         mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showHidePreview(true);
+//                startCameraSource();
+//                fab.hide();
+            }
+        });
 
         Bundle b = getIntent().getBundleExtra("config");
-        if(b != null) {
+        if (b != null) {
             acmsc = b.getParcelable(StreamingFragment.KEY_MEDIA_SOURCE_CONFIGURATION);
         }
 
@@ -104,6 +138,54 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
         } else {
             requestCameraPermission();
         }
+
+        if (null == icicle) {
+            signInAWSCognito();
+            fab.setEnabled(false);
+            fab.hide();
+            showHidePreview(false);
+            // clear faces list
+            mFaceMatchFragment.clear();
+        } else {
+            showHidePreview(icicle.getBoolean(KEY_PREVIEW_SHOWN) && Utils.isConnected(this));
+            fab.setEnabled(true);
+            hideProgress();
+        }
+    }
+
+
+    protected void signInAWSCognito() {
+        AWSMobileClient.getInstance().initialize(this, awsStartupResult -> {
+
+            final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
+            if (!identityManager.isUserSignedIn()) {
+                AuthUIConfiguration config =
+                        new AuthUIConfiguration.Builder()
+                                .userPools(true)  // true? show the Email and Password UI
+                                .backgroundColor(Color.BLUE) // Change the backgroundColor
+                                .isBackgroundColorFullScreen(true) // Full screen backgroundColor the backgroundColor full screenff
+                                .fontFamily("sans-serif-light") // Apply sans-serif-light as the global font
+                                .canCancel(false)
+                                .build();
+
+                SignInUI signInUI = (SignInUI) AWSMobileClient.getInstance().getClient(FaceTrackerActivity.this, SignInUI.class);
+                signInUI.login(FaceTrackerActivity.this, FaceTrackerActivity.class).authUIConfiguration(config).execute();
+            }
+            setupSession();
+        }).execute();
+    }
+
+    public void setupSession() {
+        if (!Utils.isConnected(this)) {
+            // we don't have connectivity
+            Snackbar.make(mFaceMatchFragment.getView(), "No internet connectivity!", Snackbar.LENGTH_INDEFINITE).show();
+            hideProgress();
+            return;
+        }
+        Snackbar.make(findViewById(R.id.fab), "Please wait...", Snackbar.LENGTH_SHORT).show();
+        final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
+        final CognitoUserPool userPool = new CognitoUserPool(this, identityManager.getConfiguration());
+        userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(this, this, identityManager));
     }
 
     /**
@@ -144,6 +226,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
      * at long distances.
      */
     GraphicFaceTrackerFactory mFaceTracker = new GraphicFaceTrackerFactory();
+
     private void createCameraSource() {
 
         Context context = getApplicationContext();
@@ -171,7 +254,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
 
         int cameraFacing = CameraSource.CAMERA_FACING_BACK;
         int hr = 720, vr = 720;
-        if(acmsc != null) {
+        if (acmsc != null) {
             cameraFacing = acmsc.getCameraFacing();
             hr = acmsc.getHorizontalResolution();
             vr = acmsc.getHorizontalResolution();
@@ -191,7 +274,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
     @Override
     protected void onResume() {
         super.onResume();
-        startCameraSource();
     }
 
     /**
@@ -201,6 +283,67 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
     protected void onPause() {
         super.onPause();
         mPreview.stop();
+        showHidePreview(false);
+    }
+
+
+    private Animator.AnimatorListener mAnimatorListener = new Animator.AnimatorListener() {
+        @Override
+        public void onAnimationStart(Animator animator) {
+
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animator) {
+            startCameraSource();
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animator) {
+
+        }
+
+        @Override
+        public void onAnimationRepeat(Animator animator) {
+
+        }
+    };
+
+    @Override
+    public void onSaveInstanceState(Bundle state, PersistableBundle outPersistentState) {
+        state.putBoolean(KEY_PREVIEW_SHOWN, previewShown);
+        super.onSaveInstanceState(state, outPersistentState);
+    }
+
+    private void animate(View view, float weight, boolean previewShown) {
+        int ms = 0;
+        Utils.ViewWeightAnimationWrapper animationWrapper = new Utils.ViewWeightAnimationWrapper(view);
+        ObjectAnimator anim = ObjectAnimator.ofFloat(animationWrapper,
+                "weight",
+                animationWrapper.getWeight(),
+                weight);
+        anim.setInterpolator(new DecelerateInterpolator());
+        if (previewShown) {
+            ms = 100;
+            anim.addListener(mAnimatorListener);
+        }
+        anim.setDuration(ms);
+        anim.start();
+    }
+
+    public void showHidePreview(boolean show) {
+        previewShown = show;
+        if (show) {
+            float ratio = getResources().getDisplayMetrics().heightPixels / (float) getResources().getDisplayMetrics().widthPixels;
+            if (Utils.isPortraitMode(this)) {
+                ratio = getResources().getDisplayMetrics().widthPixels / (float) getResources().getDisplayMetrics().heightPixels;
+            }
+            animate(mPreview, ratio, show);
+            animate(mFaceMatchFragment.getView(), 1 - ratio, show);
+        } else {
+            animate(mPreview, 0f, show);
+            animate(mFaceMatchFragment.getView(), 1f, show);
+        }
     }
 
     /**
@@ -214,7 +357,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
             mCameraSource.release();
         }
 
-        if(mFaceDetector != null) {
+        if (mFaceDetector != null) {
             mFaceDetector.release();
         }
 
@@ -312,53 +455,59 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
     }
 
     private int currentFaceId = -1;
+
     public void faceToImageViewLandscape(byte[] bytes, int faceId) {
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
 
-        byte[] byteArray = byteArrayOutputStream .toByteArray();
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+/*
         FaceDetector detector = new FaceDetector.Builder(this)
                 .setTrackingEnabled(true)
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .build();
         Frame frame = new Frame.Builder()
-                .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length))
+                .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length))
                 .build();
         SparseArray faces = detector.detect(frame);
-        if(faces.size() > 0) {
-            addFaceToList(faceId, buffer, bitmap);
-        }
+*/
+//        if (faces.size() > 0) {
+        addFaceToList(faceId, buffer, bitmap);
+//        }
     }
+
     public void faceToImageViewPortrait(Bitmap bitmap, int faceId) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
         bitmap = rotateBitmap(bitmap, 90);
 
-        byte[] byteArray = byteArrayOutputStream .toByteArray();
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
         ByteBuffer buffer = ByteBuffer.wrap(byteArray);
+/*
         FaceDetector detector = new FaceDetector.Builder(this)
                 .setTrackingEnabled(true)
                 .setClassificationType(FaceDetector.ALL_CLASSIFICATIONS)
                 .build();
         Frame frame = new Frame.Builder()
-                .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0,byteArray.length))
+                .setBitmap(BitmapFactory.decodeByteArray(byteArray, 0, byteArray.length))
                 .build();
         SparseArray faces = detector.detect(frame);
+*/
 //        if(faces.size() > 0) {
-            addFaceToList(faceId, buffer, bitmap);
+        addFaceToList(faceId, buffer, bitmap);
 //        }
     }
 
-    private void addFaceToList(int faceId, ByteBuffer buffer, Bitmap bitmap){
+    private void addFaceToList(int faceId, ByteBuffer buffer, Bitmap bitmap) {
         if (faceId != currentFaceId) {
             currentFaceId = faceId;
-            if(mFaceMatchFragment != null) {
+            if (mFaceMatchFragment != null) {
                 FaceMatchItem fmi = new FaceMatchItem("", 0, "", bitmap);
                 new Thread(() -> {
                     boolean faceMatched = new StreamManager(this).startFaceSearchRequest(buffer, fmi);
-                    if(!faceMatched) {
+                    if (!faceMatched) {
                         // we couldn't recognize this face
                         currentFaceId = -1;
                     } else {
@@ -375,6 +524,20 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
     public void onListFragmentInteraction(FaceMatchItem item) {
         Toast.makeText(this, item.name, Toast.LENGTH_SHORT).show();
     }
+
+    @Override
+    public void onCredentialsRecieved(CognitoCachingCredentialsProvider credentialsProvider) {
+        hideProgress();
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setEnabled(true);
+        fab.show();
+    }
+
+    private void hideProgress() {
+        findViewById(R.id.progress_bar).setVisibility(View.GONE);
+    }
+
+
     //==============================================================================================
     // Graphic Face Tracker
     //==============================================================================================
@@ -393,7 +556,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements Face
         }
 
         public void done() {
-            if(mTracker != null) {
+            if (mTracker != null) {
                 mTracker.onDone();
             }
         }

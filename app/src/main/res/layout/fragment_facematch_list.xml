@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.RecyclerView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/list"
     android:name="com.edexelroots.android.sensoriot.FaceMatchFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="16dp"
-    android:layout_marginRight="16dp"
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp"
+    android:background="#ddd"
     app:layoutManager="android.support.v7.widget.LinearLayoutManager"
     tools:context=".vision.FaceMatchFragment"
+    android:layoutAnimation="@anim/layout_animation"
     tools:listitem="@layout/fragment_facematch" />

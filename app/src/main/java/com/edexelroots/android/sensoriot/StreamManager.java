@@ -7,7 +7,9 @@ package com.edexelroots.android.sensoriot;
 // Stream Processor operations.
 
 import android.content.Context;
+import android.widget.Toast;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
@@ -42,6 +44,7 @@ import com.amazonaws.services.rekognition.model.StreamProcessorSettings;
 import com.amazonaws.services.rekognition.model.StreamProcessorStatus;
 import com.edexelroots.android.sensoriot.iot.MqttPublishManager;
 import com.edexelroots.android.sensoriot.vision.FaceMatchItem;
+import com.edexelroots.android.sensoriot.vision.FaceTrackerActivity;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -77,13 +80,13 @@ public class StreamManager {
                          String kdStreamArn,
                          String iamRoleArn,
                          String collId,
-                         Float threshold){
-        streamProcessorName=spName;
-        kinesisVideoStreamArn=kvStreamArn;
-        kinesisDataStreamArn=kdStreamArn;
-        roleArn=iamRoleArn;
-        collectionId=collId;
-        matchThreshold=threshold;
+                         Float threshold) {
+        streamProcessorName = spName;
+        kinesisVideoStreamArn = kvStreamArn;
+        kinesisDataStreamArn = kdStreamArn;
+        roleArn = iamRoleArn;
+        collectionId = collId;
+        matchThreshold = threshold;
         CognitoCachingCredentialsProvider cp = new CognitoCachingCredentialsProvider(c, MqttPublishManager.COGNITO_POOL_ID, MqttPublishManager.MY_REGION);
         rekognitionClient = new AmazonRekognitionClient(cp);
         rekognitionClient.setRegion(Region.getRegion(Regions.AP_NORTHEAST_1));
@@ -137,6 +140,13 @@ public class StreamManager {
                 faceMatchItem.similarity = face.getSimilarity();
                 Utils.logE(getClass().getName(), faceMatchItem.name);
             }
+        } catch (AmazonClientException ace) {
+/*
+            // not showing toast for now because it gets called continously -- Todo - show toast/snackbar once
+            if (ace.getMessage().contains("Unable to resolve host")) {
+                ((FaceTrackerActivity) mContext).runOnUiThread(() -> Toast.makeText(mContext, "No connectivity!", Toast.LENGTH_SHORT).show());
+            }
+*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -147,15 +157,15 @@ public class StreamManager {
         try {
             StartStreamProcessorResult startStreamProcessorResult =
                     rekognitionClient.startStreamProcessor(new StartStreamProcessorRequest().withName(streamProcessorName));
-            Utils.logE(getClass(). getName(),"Stream Processor " + streamProcessorName + " started.");
+            Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " started.");
             Utils.logE(getClass().getName(), startStreamProcessorResult.toString());
-        }catch (ResourceInUseException riue) {
+        } catch (ResourceInUseException riue) {
             riue.printStackTrace();
         }
     }
 
     public void stopStreamProcessor() {
-        try{
+        try {
 
             StopStreamProcessorResult stopStreamProcessorResult =
                     rekognitionClient.stopStreamProcessor(new StopStreamProcessorRequest().withName(streamProcessorName));
@@ -172,7 +182,7 @@ public class StreamManager {
     }
 
 
-     /* Creates a StreamProcess if it doesn't exist already. Once the stream processor is created, it's started and then
+    /* Creates a StreamProcess if it doesn't exist already. Once the stream processor is created, it's started and then
      * described to know the result of the stream processor.
      */
     public void process() {

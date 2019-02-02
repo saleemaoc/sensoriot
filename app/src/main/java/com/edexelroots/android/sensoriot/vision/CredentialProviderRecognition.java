@@ -8,6 +8,7 @@ import com.amazonaws.auth.CognitoCachingCredentialsProvider;
 import com.amazonaws.regions.Region;
 import com.amazonaws.services.iot.AWSIotClient;
 import com.amazonaws.services.iot.model.AttachPrincipalPolicyRequest;
+import com.edexelroots.android.sensoriot.CredentialsReciever;
 import com.edexelroots.android.sensoriot.iot.MqttPublishManager;
 import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 
@@ -18,16 +19,18 @@ public class CredentialProviderRecognition extends AsyncTask<String, Void, Void>
 
     private Exception exception;
     CognitoCachingCredentialsProvider credentialsProvider = null;
-    KinesisActivity mActivity = null;
+    CredentialsReciever mReciever = null;
+    Context mContext = null;
 
-    public CredentialProviderRecognition(KinesisActivity mpm) {
-        this.mActivity = mpm;
+    public CredentialProviderRecognition(Context c, CredentialsReciever cr) {
+        this.mContext = c;
+        this.mReciever = cr;
     }
 
     protected Void doInBackground(String... args) {
 
         try {
-            credentialsProvider = new CognitoCachingCredentialsProvider(mActivity, MqttPublishManager.COGNITO_POOL_ID, MqttPublishManager.MY_REGION);
+            credentialsProvider = new CognitoCachingCredentialsProvider(mContext, MqttPublishManager.COGNITO_POOL_ID, MqttPublishManager.MY_REGION);
 
             String identityId = args[1];
             AttachPrincipalPolicyRequest policyRequest = new AttachPrincipalPolicyRequest();//.withPrincipal(identityId).withPolicyName(policyName);
@@ -55,7 +58,7 @@ public class CredentialProviderRecognition extends AsyncTask<String, Void, Void>
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        mActivity.credentialsReceived(credentialsProvider);
+        mReciever.onCredentialsRecieved(credentialsProvider);
     }
 }
 

@@ -18,10 +18,8 @@ package com.edexelroots.android.sensoriot.vision;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.widget.ImageView;
 
 import com.edexelroots.android.sensoriot.vision.camera.GraphicOverlay;
-import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 
 /**
@@ -29,21 +27,22 @@ import com.google.android.gms.vision.face.Face;
  * graphic overlay view.
  */
 class FaceGraphic extends GraphicOverlay.Graphic {
-    private static final float FACE_POSITION_RADIUS = 10.0f;
+    /*
+        private static final float FACE_POSITION_RADIUS = 10.0f;
+        private static final float ID_Y_OFFSET = 50.0f;
+        private static final float ID_X_OFFSET = -50.0f;
+    */
+    //    public static float left = 0, top =0, right=0, bottom=0;
     private static final float ID_TEXT_SIZE = 40.0f;
-    private static final float ID_Y_OFFSET = 50.0f;
-    private static final float ID_X_OFFSET = -50.0f;
     private static final float BOX_STROKE_WIDTH = 5.0f;
-//    public static float left = 0, top =0, right=0, bottom=0;
-
     private static final int COLOR_CHOICES[] = {
-        Color.BLUE,
-        Color.CYAN,
-        Color.GREEN,
-        Color.MAGENTA,
-        Color.RED,
-        Color.WHITE,
-        Color.YELLOW
+            Color.BLUE,
+            Color.CYAN,
+            Color.GREEN,
+            Color.MAGENTA,
+            Color.RED,
+            Color.WHITE,
+            Color.YELLOW
     };
     private static int mCurrentColorIndex = 0;
 
@@ -53,7 +52,7 @@ class FaceGraphic extends GraphicOverlay.Graphic {
 
     private volatile Face mFace;
     private int mFaceId;
-    private float mFaceHappiness;
+    //    private float mFaceHappiness;
 
     FaceGraphic(GraphicOverlay overlay) {
         super(overlay);
@@ -98,18 +97,10 @@ class FaceGraphic extends GraphicOverlay.Graphic {
             return;
         }
 
-        // Draws a circle at the position of the detected face, with the face's track id below.
         float x = translateX(face.getPosition().x + face.getWidth() / 2);
         float y = translateY(face.getPosition().y + face.getHeight() / 2);
+/*      // Draws a circle at the position of the detected face, with the face's track id below.
         canvas.drawCircle(x, y, FACE_POSITION_RADIUS, mFacePositionPaint);
-
-//        canvas.drawCircle(face.getPosition().x, face.getPosition().y, FACE_POSITION_RADIUS, mFacePositionPaint);
-//        canvas.drawCircle(face.getPosition().x + face.getWidth(), face.getPosition().y + face.getHeight(), FACE_POSITION_RADIUS, mFacePositionPaint);
-/*
-        canvas.drawText("id: " + mFaceId, x + ID_X_OFFSET, y + ID_Y_OFFSET, mIdPaint);
-        canvas.drawText("happiness: " + String.format("%.2f", face.getIsSmilingProbability()), x - ID_X_OFFSET, y - ID_Y_OFFSET, mIdPaint);
-        canvas.drawText("right eye: " + String.format("%.2f", face.getIsRightEyeOpenProbability()), x + ID_X_OFFSET * 2, y + ID_Y_OFFSET * 2, mIdPaint);
-        canvas.drawText("left eye: " + String.format("%.2f", face.getIsLeftEyeOpenProbability()), x - ID_X_OFFSET*2, y - ID_Y_OFFSET*2, mIdPaint);
 */
         // Draws a bounding box around the face.
         float xOffset = scaleX(face.getWidth() / 2.0f);
@@ -119,10 +110,8 @@ class FaceGraphic extends GraphicOverlay.Graphic {
         float right = x + xOffset;
         float bottom = y + yOffset;
 
+//        canvas.drawCircle(x, y, (face.getWidth() + face.getHeight()) / 2, mBoxPaint);
         canvas.drawRect(left, top, right, bottom, mBoxPaint);
     }
 
-    public static void faceToImage(ImageView iv, Frame f) {
-
-    }
 }

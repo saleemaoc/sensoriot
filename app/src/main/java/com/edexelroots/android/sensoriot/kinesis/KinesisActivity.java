@@ -3,6 +3,7 @@ package com.edexelroots.android.sensoriot.kinesis;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +29,7 @@ import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.Auth
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.ChallengeContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.continuations.MultiFactorAuthenticationContinuation;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.handlers.AuthenticationHandler;
+import com.edexelroots.android.sensoriot.CredentialsReciever;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.fragments.Camera2BasicFragment;
@@ -36,7 +38,7 @@ import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
 import com.edexelroots.android.sensoriot.vision.CredentialProviderRecognition;
 import com.edexelroots.android.sensoriot.vision.FaceTrackerActivity;
 
-public class KinesisActivity extends AppCompatActivity {
+public class KinesisActivity extends AppCompatActivity implements CredentialsReciever {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,11 +77,17 @@ public class KinesisActivity extends AppCompatActivity {
     }
 
     public void setupSession() {
+        if(!Utils.isConnected(this)) {
+            // we don't have connectivity
+            Snackbar.make(findViewById(R.id.btn_scanning), "No internet connectivity!", Snackbar.LENGTH_INDEFINITE).show();
+            hideProgress();
+            return;
+        }
         ((TextView) findViewById(R.id.tv_connection_status)).setText("Please wait...");
         final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
 
         final CognitoUserPool userPool = new CognitoUserPool(this, identityManager.getConfiguration());
-        userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(identityManager));
+        userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(this, this, identityManager));
     }
 
     public void startFragment(Fragment fragment, String tag) {
@@ -163,59 +171,13 @@ public class KinesisActivity extends AppCompatActivity {
         }
     }
 
-    public void credentialsReceived(CognitoCachingCredentialsProvider credentialsProvider) {
-        ((TextView) findViewById(R.id.tv_connection_status)).setText("");
-        hideProgress();
-    }
-
     public void startScanning(View view) {
         startFaceDetectionActivity();
     }
 
-    private class AWSAuthHandler implements AuthenticationHandler {
-
-        IdentityManager identityManager = null;
-
-        public AWSAuthHandler(IdentityManager im) {
-            this.identityManager = im;
-        }
-
-        @Override
-        public void onSuccess(CognitoUserSession userSession, CognitoDevice newDevice) {
-            final String idToken = userSession.getIdToken().getJWTToken();
-            identityManager.getUserID(new IdentityHandler() {
-                @Override
-                public void onIdentityId(String identityId) {
-                    new CredentialProviderRecognition(KinesisActivity.this).execute(idToken, identityId);
-                }
-
-                @Override
-                public void handleError(Exception exception) {
-                    Utils.logE(getClass().getName(), exception.getMessage());
-                    exception.printStackTrace();
-                }
-            });
-        }
-
-        @Override
-        public void getAuthenticationDetails(AuthenticationContinuation authenticationContinuation, String userId) {
-
-        }
-
-        @Override
-        public void getMFACode(MultiFactorAuthenticationContinuation continuation) {
-
-        }
-
-        @Override
-        public void authenticationChallenge(ChallengeContinuation continuation) {
-
-        }
-
-        @Override
-        public void onFailure(Exception exception) {
-
-        }
+    @Override
+    public void onCredentialsRecieved(CognitoCachingCredentialsProvider credentialsProvider) {
+        ((TextView) findViewById(R.id.tv_connection_status)).setText("");
+        hideProgress();
     }
-
 }

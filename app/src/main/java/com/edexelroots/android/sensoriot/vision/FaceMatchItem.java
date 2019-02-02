@@ -8,7 +8,7 @@ import android.graphics.Bitmap;
  * <p>
  * TODO: Replace all uses of this class before publishing your app.
  */
-public class FaceMatchItem{
+public class FaceMatchItem {
 
     public boolean blink = false;
 

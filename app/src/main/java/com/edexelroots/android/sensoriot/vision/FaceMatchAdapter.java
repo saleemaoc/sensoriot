@@ -54,6 +54,12 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
         });
     }
 
+    public void clear() {
+        if (this.mValues != null) {
+            this.mValues.clear();
+        }
+    }
+
     @Override
     public int getItemCount() {
         return mValues.size();
@@ -65,6 +71,7 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
         public final ImageView mImageView;
         public FaceMatchItem mItem;
         public final View mHighlightView;
+
         public final TextView mCounter;
 
         public ViewHolder(View view) {
@@ -81,8 +88,6 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
             return super.toString() + " '" + mNameView.getText() + "'";
         }
     }
-
-
 
 
 }

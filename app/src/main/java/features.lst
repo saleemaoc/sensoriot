@@ -1,9 +1,9 @@
 done - Portrait layout with Faces list on the bottom
 done - face recognition in portrait mode
 done - Set default settings for codec, back facing camera and camera resolution
-- One photo with highest similarity % for one person (fix)
-- Modify user interface. Add "Start Scanning" button
-- User Interface Design
+done - Add "Start Scanning" button
+done - One photo with highest similarity % for one person (fix)
+- Modify user interface.
 - Integrate your API
 - Trigger a notification when it recognizes someone
 - Test and debug to fix crashes and cleanup

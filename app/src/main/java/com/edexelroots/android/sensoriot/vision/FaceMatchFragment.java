@@ -32,14 +32,20 @@ public class FaceMatchFragment extends Fragment {
     private int mColumnCount = 1;
     private OnListFragmentInteractionListener mListener;
 
+    public static List<FaceMatchItem> mItems = new ArrayList<>();
+    FaceMatchAdapter mAdapter = null;
+    private String threeDots = " Loading ... ";
+    RecyclerView recyclerView = null;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
     public FaceMatchFragment() {
     }
-
     // TODO: Customize parameter initialization
+
+
     @SuppressWarnings("unused")
     public static FaceMatchFragment newInstance(int columnCount) {
         FaceMatchFragment fragment = new FaceMatchFragment();
@@ -58,9 +64,6 @@ public class FaceMatchFragment extends Fragment {
         }
     }
 
-    public static List<FaceMatchItem> mItems = new ArrayList<>();
-    FaceMatchAdapter mAdapter = null;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -69,7 +72,7 @@ public class FaceMatchFragment extends Fragment {
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            recyclerView = (RecyclerView) view;
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
@@ -81,28 +84,27 @@ public class FaceMatchFragment extends Fragment {
         return view;
     }
 
-    private String threeDots = " Loading ... ";
-
     public FaceMatchItem addNewFace(String id, float similarity, Bitmap image) {
-        FaceMatchItem fmi = new FaceMatchItem(id, similarity,threeDots, image);
+        FaceMatchItem fmi = new FaceMatchItem(id, similarity, threeDots, image);
         mItems.add(0, fmi);
         return fmi;
     }
 
     public void addNewFace(FaceMatchItem fmi) {
         FaceMatchItem existing = null;
-        for(FaceMatchItem i : mItems) {
-            if(i.awsFaceId.contentEquals(fmi.awsFaceId)) {
+        for (FaceMatchItem i : mItems) {
+            if (i.awsFaceId.contentEquals(fmi.awsFaceId)) {
                 // already have recognized this face..
                 Utils.logE(getClass().getName(), "Face already exists");
                 existing = i;
                 break;
             }
         }
-        if(existing == null) {
+        if (existing == null) {
             Utils.logE(getClass().getName(), "Adding Face to List");
             mItems.add(0, fmi);
             notifyDataSetChanged();
+            recyclerView.scheduleLayoutAnimation();
         } else if (existing.similarity < fmi.similarity) {
             existing.similarity = fmi.similarity;
             existing.image = fmi.image;
@@ -119,7 +121,12 @@ public class FaceMatchFragment extends Fragment {
         mAdapter.notifyDataSetChanged();
     }
 
+    public void clear() {
+        this.mAdapter.clear();
+    }
+
     HashMap<String, FaceMatchItem> map = new HashMap<>();
+
     public void notifyDataSetChanged() {
 /*
         for(FaceMatchItem f: mItems) {
@@ -129,7 +136,9 @@ public class FaceMatchFragment extends Fragment {
             map.put(f.name, f);
         }
 */
-        mAdapter.notifyDataSetChanged();
+        if(mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
