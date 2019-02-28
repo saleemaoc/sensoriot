@@ -18,33 +18,33 @@ package com.edexelroots.android.sensoriot.vision;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
@@ -58,13 +58,14 @@ import com.edexelroots.android.sensoriot.CredentialsReciever;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
+import com.edexelroots.android.sensoriot.iot.MainActivity;
 import com.edexelroots.android.sensoriot.kinesis.AWSAuthHandler;
-import com.edexelroots.android.sensoriot.kinesis.KinesisActivity;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
+import com.edexelroots.android.sensoriot.vision.api.FaceApiService;
+import com.edexelroots.android.sensoriot.vision.api.FaceResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.CameraSource;
-import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 import com.google.android.gms.vision.face.Face;
@@ -76,13 +77,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 
 /**
  * Activity for the face tracker app.  This app detects faces with the rear facing camera, and draws
  * overlay graphics to indicate the position, size, and ID of each face.
  */
-public final class FaceTrackerActivity extends AppCompatActivity
-        implements FaceMatchFragment.OnListFragmentInteractionListener, CredentialsReciever {
+public final class FaceTrackerActivity extends AppCompatActivity implements
+        FaceMatchFragment.OnFaceFragmentListener,
+        CredentialsReciever {
     private static final String TAG = "FaceTracker";
 
     private CameraSource mCameraSource = null;
@@ -251,15 +257,34 @@ public final class FaceTrackerActivity extends AppCompatActivity
             Log.w(TAG, "Face detector dependencies are not yet available.");
             return;
         }
-
         int cameraFacing = CameraSource.CAMERA_FACING_BACK;
-        int hr = 720, vr = 720;
+        int hr = 720, vr = 360;
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        float ratio = dm.heightPixels / (float)dm.widthPixels;
+        if(!Utils.isPortraitMode(this)) {
+            ratio = dm.widthPixels / (float) dm.heightPixels;
+        }
+        vr = (int) (hr * ratio);
+        float half = dm.heightPixels / 2f;
+        if(vr > half) {
+            float prevVr = vr;
+            vr = (int) half;
+            float div = prevVr / (float) vr;
+            hr = (int) (hr/ div);
+        }
+/*
+        Utils.logE(getClass().getName(), dm.widthPixels + " : " + dm.heightPixels + "; Ratio: " + ratio);
+        Utils.logE(getClass().getName(), hr + " : " + vr);
+
+        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mPreview.getLayoutParams();
+        lp.leftMargin = lp.rightMargin = (lp.leftMargin + lp.rightMargin) / 2;
+        mPreview.setLayoutParams(lp);
+*/
         if (acmsc != null) {
             cameraFacing = acmsc.getCameraFacing();
             hr = acmsc.getHorizontalResolution();
             vr = acmsc.getHorizontalResolution();
         }
-
         mCameraSource = new CameraSource.Builder(context, mFaceDetector)
                 .setRequestedPreviewSize(hr, vr)
                 .setFacing(cameraFacing)
@@ -397,11 +422,7 @@ public final class FaceTrackerActivity extends AppCompatActivity
         Log.e(TAG, "Permission not granted: results len = " + grantResults.length +
                 " Result code = " + (grantResults.length > 0 ? grantResults[0] : "(empty)"));
 
-        DialogInterface.OnClickListener listener = new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                finish();
-            }
-        };
+        DialogInterface.OnClickListener listener = (dialog, id) -> finish();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Face Tracker")
@@ -511,7 +532,8 @@ public final class FaceTrackerActivity extends AppCompatActivity
                         // we couldn't recognize this face
                         currentFaceId = -1;
                     } else {
-                        runOnUiThread(() -> {
+                        getFaceDetails(fmi);
+                        runOnUiThread(() ->{
                             mFaceMatchFragment.addNewFace(fmi);
                         });
                     }
@@ -520,9 +542,59 @@ public final class FaceTrackerActivity extends AppCompatActivity
         }
     }
 
+    FaceApiService mFaceApi = new FaceApiService();
+    private void getFaceDetails(FaceMatchItem fmi) {
+        // Todo - remove this later
+        fmi.awsFaceId = "f5be7536-d1f2-4c3c-b26c-7b8c8a90ab1b";
+        mFaceApi.getFace(fmi.awsFaceId, new Callback<FaceResponse>() {
+            @Override
+            public void onResponse(Call<FaceResponse> call, Response<FaceResponse> response) {
+                if(response.isSuccessful()) {
+                    FaceResponse faceResponse = response.body();
+                    fmi.name = faceResponse.name;
+                    fmi.subtitle = faceResponse.title;
+                    fmi.url = faceResponse.url;
+//                    Utils.logE(getClass().getName(), faceResponse.toString());
+
+                    runOnUiThread(() -> {
+                        mFaceMatchFragment.notifyDataSetChanged();
+                        addNotification(fmi.name, fmi.subtitle);
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FaceResponse> call, Throwable t) {
+
+            }
+        });
+    }
+
+    /*
+    API endpoint is here, please let me know if any issues:
+    https://s9jffrx7j5.execute-api.ap-southeast-1.amazonaws.com/v1/faces?faceid=input-face-id
+
+    response
+    {
+      "name": "Jon Eilerman",
+      "title": "What if we could double your financial firm&#39;s customer engagement (and sales) with our proven UX expertise?",
+      "url": "https://linkedin.com/in/joneilerman/"
+    }
+
+    test faceid:
+    f5be7536-d1f2-4c3c-b26c-7b8c8a90ab1b
+
+    And the photo for that id is on this profile:
+    https://www.linkedin.com/in/joneilerman/
+    */
     @Override
-    public void onListFragmentInteraction(FaceMatchItem item) {
-        Toast.makeText(this, item.name, Toast.LENGTH_SHORT).show();
+    public void OnFaceItemClicked(FaceMatchItem item) {
+        if(TextUtils.isEmpty(item.url)) {
+            Toast.makeText(this, "Profile not found!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(item.url));
+        startActivity(browse);
     }
 
     @Override
@@ -537,7 +609,22 @@ public final class FaceTrackerActivity extends AppCompatActivity
         findViewById(R.id.progress_bar).setVisibility(View.GONE);
     }
 
+    private void addNotification(String name, String title) {
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(android.R.drawable.btn_star)
+                        .setContentTitle(name)
+                        .setContentText(title);
 
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+
+        // Add as notification
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(0, builder.build());
+    }
     //==============================================================================================
     // Graphic Face Tracker
     //==============================================================================================

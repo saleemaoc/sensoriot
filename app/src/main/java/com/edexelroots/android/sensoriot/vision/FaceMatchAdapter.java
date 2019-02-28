@@ -4,27 +4,26 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.edexelroots.android.sensoriot.R;
-import com.edexelroots.android.sensoriot.vision.FaceMatchFragment.OnListFragmentInteractionListener;
+import com.edexelroots.android.sensoriot.vision.FaceMatchFragment.OnFaceFragmentListener;
 
 import java.util.List;
 
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link FaceMatchItem} and makes a call to the
- * specified {@link OnListFragmentInteractionListener}.
+ * specified {@link OnFaceFragmentListener}.
  * TODO: Replace the implementation with code for your data type.
  */
 public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.ViewHolder> {
 
     private final List<FaceMatchItem> mValues;
-    private final OnListFragmentInteractionListener mListener;
+    private final OnFaceFragmentListener mListener;
 
-    public FaceMatchAdapter(List<FaceMatchItem> items, OnListFragmentInteractionListener listener) {
+    public FaceMatchAdapter(List<FaceMatchItem> items, OnFaceFragmentListener listener) {
         mValues = items;
         mListener = listener;
     }
@@ -41,6 +40,7 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mNameView.setText(holder.mItem.name + "  (" + holder.mItem.similarity + ")");
+        holder.mSubtitleView.setText(holder.mItem.subtitle);
 
         holder.mCounter.setText(holder.mItem.counter + "");
         holder.mImageView.setImageBitmap(holder.mItem.image);
@@ -49,7 +49,7 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
             if (null != mListener) {
                 // Notify the active callbacks interface (the activity, if the
                 // fragment is attached to one) that an item has been selected.
-                mListener.onListFragmentInteraction(holder.mItem);
+                mListener.OnFaceItemClicked(holder.mItem);
             }
         });
     }
@@ -66,10 +66,11 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+        public FaceMatchItem mItem;
         public final View mView;
         public final TextView mNameView;
+        public final TextView mSubtitleView;
         public final ImageView mImageView;
-        public FaceMatchItem mItem;
         public final View mHighlightView;
 
         public final TextView mCounter;
@@ -78,6 +79,7 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
             super(view);
             mView = view;
             mNameView = view.findViewById(R.id.name);
+            mSubtitleView = view.findViewById(R.id.subtitle);
             mImageView = view.findViewById(R.id.cropped);
             mCounter = view.findViewById(R.id.counter);
             this.mHighlightView = view.findViewById(R.id.highlight_view);

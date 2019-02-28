@@ -13,7 +13,11 @@ public class FaceMatchItem {
     public boolean blink = false;
 
     public String awsFaceId;
+
     public String name;
+    public String subtitle;
+    public String url;
+
     public Bitmap image;
     public float similarity = 0f;
     public int counter = 1;

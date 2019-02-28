@@ -138,7 +138,7 @@ public class CameraSourcePreview extends ViewGroup {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         int wp = mContext.getResources().getDisplayMetrics().widthPixels;
-        int width = wp;//640;
+        int width = wp;;
         int height = width;
         if (mCameraSource != null) {
             Size size = mCameraSource.getPreviewSize();
