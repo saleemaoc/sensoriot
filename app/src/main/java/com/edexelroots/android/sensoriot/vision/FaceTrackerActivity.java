@@ -21,6 +21,7 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -32,12 +33,16 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.AttributeSet;
@@ -260,17 +265,17 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         int cameraFacing = CameraSource.CAMERA_FACING_BACK;
         int hr = 720, vr = 360;
         DisplayMetrics dm = getResources().getDisplayMetrics();
-        float ratio = dm.heightPixels / (float)dm.widthPixels;
-        if(!Utils.isPortraitMode(this)) {
+        float ratio = dm.heightPixels / (float) dm.widthPixels;
+        if (!Utils.isPortraitMode(this)) {
             ratio = dm.widthPixels / (float) dm.heightPixels;
         }
         vr = (int) (hr * ratio);
         float half = dm.heightPixels / 2f;
-        if(vr > half) {
+        if (vr > half) {
             float prevVr = vr;
             vr = (int) half;
             float div = prevVr / (float) vr;
-            hr = (int) (hr/ div);
+            hr = (int) (hr / div);
         }
 /*
         Utils.logE(getClass().getName(), dm.widthPixels + " : " + dm.heightPixels + "; Ratio: " + ratio);
@@ -533,7 +538,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                         currentFaceId = -1;
                     } else {
                         getFaceDetails(fmi);
-                        runOnUiThread(() ->{
+                        runOnUiThread(() -> {
                             mFaceMatchFragment.addNewFace(fmi);
                         });
                     }
@@ -543,22 +548,25 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     }
 
     FaceApiService mFaceApi = new FaceApiService();
+
     private void getFaceDetails(FaceMatchItem fmi) {
         // Todo - remove this later
         fmi.awsFaceId = "f5be7536-d1f2-4c3c-b26c-7b8c8a90ab1b";
         mFaceApi.getFace(fmi.awsFaceId, new Callback<FaceResponse>() {
             @Override
             public void onResponse(Call<FaceResponse> call, Response<FaceResponse> response) {
-                if(response.isSuccessful()) {
+                if (response.isSuccessful()) {
                     FaceResponse faceResponse = response.body();
                     fmi.name = faceResponse.name;
                     fmi.subtitle = faceResponse.title;
                     fmi.url = faceResponse.url;
-//                    Utils.logE(getClass().getName(), faceResponse.toString());
+                    // Utils.logE(getClass().getName(), faceResponse.toString());
 
                     runOnUiThread(() -> {
                         mFaceMatchFragment.notifyDataSetChanged();
-                        addNotification(fmi.name, fmi.subtitle);
+                        // addNotification(fmi.name, fmi.subtitle);
+                        showNotification(fmi.name, fmi.url);
+                        vibrate(500);
                     });
                 }
             }
@@ -589,7 +597,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     */
     @Override
     public void OnFaceItemClicked(FaceMatchItem item) {
-        if(TextUtils.isEmpty(item.url)) {
+        if (TextUtils.isEmpty(item.url)) {
             Toast.makeText(this, "Profile not found!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -609,22 +617,45 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         findViewById(R.id.progress_bar).setVisibility(View.GONE);
     }
 
-    private void addNotification(String name, String title) {
-        NotificationCompat.Builder builder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(android.R.drawable.btn_star)
-                        .setContentTitle(name)
-                        .setContentText(title);
+
+    public void showNotification(String name, String url) {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        int notificationId = 1;
+        String channelId = "channel-01";
+        String channelName = "Rekognition Channel";
+        int importance = NotificationManager.IMPORTANCE_HIGH;
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel mChannel = new NotificationChannel(channelId, channelName, importance);
+            notificationManager.createNotificationChannel(mChannel);
+        }
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channelId)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle(name)
+                .setContentText(url);
 
         Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(contentIntent);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        stackBuilder.addNextIntent(notificationIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        mBuilder.setContentIntent(resultPendingIntent);
 
-        // Add as notification
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(0, builder.build());
+        notificationManager.notify(notificationId, mBuilder.build());
     }
+
+    private void vibrate(int millis) {
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(millis, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(millis);
+        }
+    }
+
     //==============================================================================================
     // Graphic Face Tracker
     //==============================================================================================
