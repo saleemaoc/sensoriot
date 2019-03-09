@@ -116,6 +116,7 @@ public class FaceMatchFragment extends Fragment {
 
     public void removeFace(FaceMatchItem fmi) {
         mItems.remove(fmi);
+        mAdapter.notifyItemRemoved(mItems.indexOf(fmi));
         mAdapter.notifyDataSetChanged();
     }
 

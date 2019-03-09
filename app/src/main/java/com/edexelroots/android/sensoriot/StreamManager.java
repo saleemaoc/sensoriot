@@ -87,9 +87,9 @@ public class StreamManager {
         roleArn = iamRoleArn;
         collectionId = collId;
         matchThreshold = threshold;
-        CognitoCachingCredentialsProvider cp = new CognitoCachingCredentialsProvider(c, MqttPublishManager.COGNITO_POOL_ID, MqttPublishManager.MY_REGION);
+        CognitoCachingCredentialsProvider cp = new CognitoCachingCredentialsProvider(c, MqttPublishManager.COGNITO_POOL_ID, FaceTrackerActivity.REGION);
         rekognitionClient = new AmazonRekognitionClient(cp);
-        rekognitionClient.setRegion(Region.getRegion(Regions.AP_NORTHEAST_1));
+        rekognitionClient.setRegion(Region.getRegion(FaceTrackerActivity.REGION));
         rekognitionClient.setEndpoint("rekognition.ap-northeast-1.amazonaws.com");
         mContext = c;
 
@@ -128,7 +128,7 @@ public class StreamManager {
                 .withImage(image)
                 .withCollectionId(collectionId)
                 .withFaceMatchThreshold(matchThreshold)
-                .withMaxFaces(2);
+                .withMaxFaces(1);
 
         List<FaceMatch> faceImageMatches = new ArrayList<>();
         try {
@@ -136,11 +136,12 @@ public class StreamManager {
             faceImageMatches = sfbi.getFaceMatches();
             for (FaceMatch face : faceImageMatches) {
                 faceMatchItem.awsFaceId = face.getFace().getFaceId();
-                faceMatchItem.name = face.getFace().getExternalImageId();
+                faceMatchItem.name = "Retrieving information...";//face.getFace().getExternalImageId();
                 faceMatchItem.similarity = face.getSimilarity();
                 Utils.logE(getClass().getName(), faceMatchItem.name);
             }
         } catch (AmazonClientException ace) {
+            ace.printStackTrace();
 /*
             // not showing toast for now because it gets called continously -- Todo - show toast/snackbar once
             if (ace.getMessage().contains("Unable to resolve host")) {

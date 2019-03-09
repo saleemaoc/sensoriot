@@ -12,6 +12,9 @@ public class FaceResponse {
     @SerializedName("url")
     public String url;
 
+    @SerializedName("errorMessage")
+    public String errorMessage = "";
+
     public String toString() {
         return String.format("%s : %s\n%s", this.name, this.title, this.url);
     }

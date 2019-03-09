@@ -59,6 +59,7 @@ import com.amazonaws.mobile.auth.ui.SignInUI;
 import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.mobileconnectors.cognitoidentityprovider.CognitoUserPool;
 import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCameraMediaSourceConfiguration;
+import com.amazonaws.regions.Regions;
 import com.edexelroots.android.sensoriot.CredentialsReciever;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.StreamManager;
@@ -109,6 +110,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
     FaceMatchFragment mFaceMatchFragment = null;
 
+//    public static Regions REGION = Regions.AP_NORTHEAST_1;
+    public static Regions REGION = Regions.AP_SOUTHEAST_1;
+
     boolean previewShown = false;
     private final String KEY_PREVIEW_SHOWN = "preview_shown";
 
@@ -124,16 +128,13 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         super.onCreate(icicle);
         setContentView(R.layout.main);
 
-        mPreview = (CameraSourcePreview) findViewById(R.id.preview);
-        mGraphicOverlay = (GraphicOverlay) findViewById(R.id.faceOverlay);
+        mPreview = findViewById(R.id.preview);
+        mGraphicOverlay = findViewById(R.id.faceOverlay);
         FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showHidePreview(true);
+        fab.setOnClickListener(view -> {
+            showHidePreview(true);
 //                startCameraSource();
 //                fab.hide();
-            }
         });
 
         Bundle b = getIntent().getBundleExtra("config");
@@ -263,7 +264,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             return;
         }
         int cameraFacing = CameraSource.CAMERA_FACING_BACK;
-        int hr = 720, vr = 360;
+        int hr = 720, vr = 720;
         DisplayMetrics dm = getResources().getDisplayMetrics();
         float ratio = dm.heightPixels / (float) dm.widthPixels;
         if (!Utils.isPortraitMode(this)) {
@@ -550,13 +551,17 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     FaceApiService mFaceApi = new FaceApiService();
 
     private void getFaceDetails(FaceMatchItem fmi) {
-        // Todo - remove this later
-        fmi.awsFaceId = "f5be7536-d1f2-4c3c-b26c-7b8c8a90ab1b";
         mFaceApi.getFace(fmi.awsFaceId, new Callback<FaceResponse>() {
             @Override
             public void onResponse(Call<FaceResponse> call, Response<FaceResponse> response) {
                 if (response.isSuccessful()) {
                     FaceResponse faceResponse = response.body();
+                    if(faceResponse.errorMessage.equalsIgnoreCase("Unknown FaceID")) {
+                        Utils.logE(getClass().getName(), "Unknow FaceID");
+                        // fmi.name = "Unknown";
+                        runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
+                        return;
+                    }
                     fmi.name = faceResponse.name;
                     fmi.subtitle = faceResponse.title;
                     fmi.url = faceResponse.url;
@@ -578,23 +583,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         });
     }
 
-    /*
-    API endpoint is here, please let me know if any issues:
-    https://s9jffrx7j5.execute-api.ap-southeast-1.amazonaws.com/v1/faces?faceid=input-face-id
-
-    response
-    {
-      "name": "Jon Eilerman",
-      "title": "What if we could double your financial firm&#39;s customer engagement (and sales) with our proven UX expertise?",
-      "url": "https://linkedin.com/in/joneilerman/"
-    }
-
-    test faceid:
-    f5be7536-d1f2-4c3c-b26c-7b8c8a90ab1b
-
-    And the photo for that id is on this profile:
-    https://www.linkedin.com/in/joneilerman/
-    */
     @Override
     public void OnFaceItemClicked(FaceMatchItem item) {
         if (TextUtils.isEmpty(item.url)) {
@@ -636,7 +624,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                 .setContentTitle(name)
                 .setContentText(url);
 
-        Intent notificationIntent = new Intent(this, MainActivity.class);
+        Intent notificationIntent = new Intent(this, FaceTrackerActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
         stackBuilder.addNextIntent(notificationIntent);
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
