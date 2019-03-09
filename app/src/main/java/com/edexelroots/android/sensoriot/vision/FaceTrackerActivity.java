@@ -64,7 +64,6 @@ import com.edexelroots.android.sensoriot.CredentialsReciever;
 import com.edexelroots.android.sensoriot.R;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
-import com.edexelroots.android.sensoriot.iot.MainActivity;
 import com.edexelroots.android.sensoriot.kinesis.AWSAuthHandler;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
 import com.edexelroots.android.sensoriot.vision.api.FaceApiService;
@@ -538,9 +537,11 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                         // we couldn't recognize this face
                         currentFaceId = -1;
                     } else {
-                        getFaceDetails(fmi);
                         runOnUiThread(() -> {
-                            mFaceMatchFragment.addNewFace(fmi);
+                            boolean isNewFace = mFaceMatchFragment.addNewFace(fmi);
+                            if(isNewFace) {
+                                getFaceDetails(fmi);
+                            }
                         });
                     }
                 }).start();
@@ -558,18 +559,15 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                     FaceResponse faceResponse = response.body();
                     if(faceResponse.errorMessage.equalsIgnoreCase("Unknown FaceID")) {
                         Utils.logE(getClass().getName(), "Unknow FaceID");
-                        // fmi.name = "Unknown";
                         runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
                         return;
                     }
                     fmi.name = faceResponse.name;
                     fmi.subtitle = faceResponse.title;
                     fmi.url = faceResponse.url;
-                    // Utils.logE(getClass().getName(), faceResponse.toString());
 
                     runOnUiThread(() -> {
                         mFaceMatchFragment.notifyDataSetChanged();
-                        // addNotification(fmi.name, fmi.subtitle);
                         showNotification(fmi.name, fmi.url);
                         vibrate(500);
                     });

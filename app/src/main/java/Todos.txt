@@ -1,35 +1,31 @@
 
-limit the search to 1 result
+- limit the search to 1 result. rekognition should return the best match in that case
 
-rekognition should return the best match in that case
+- also, if its recognized a person and they are shown in the panel below, it doesn't need to alert if it sees them again, once is enough
 
-also, if its recognized a person and they are shown in the panel below, it doesnt need to alert if it sees them again, once is enough
+- is the purple circle a counter for how often they have been recognized? that's not needed as it only needs to see them once and alert me, after that just leave them in the list
 
-is the purple circle a counter for how often they have been recognized? that's not needed as it only needs to see them once and alert me, after that just leave them in the list
+- new recognitions should go above the existing ones. so if it spots 3 different people in a row, the most recent one would be at the top of that list
 
-new recognitions should go above the existing ones
+done - can we scroll through the list but keep the video in place?
 
-so if it spots 3 different people in a row, the most recent one would be at the top of that list
+- video could even be a bit smaller, the main feature here is the recognized people
 
-can we scroll through the list but keep the video in place?
+- i dont mind if video is cropped, i just need a rough idea of where it is pointing so i can make sure its positioned to capture faces correctly
 
-video could even be a bit smaller, the main feature here is the recognized people
+- if i click one of the notifications (top of my screen) it seems to reset the app, closes the video and loses the list
 
-i dont mind if video is cropped, i just need a rough idea of where it is pointing so i can make sure its positioned to capture faces correctly
+- clicking the face entry at the bottom opens the linkedin, but when i return to the app the video has closed, any way you can (easily) keep that running? or at least restore it when i return to the app?
 
-if i click one of the notifications (top of my screen) it seems to reset the app, closes the video and loses the list
+- can you also stop the phone going into lock mode while recording?
 
-clicking the face entry at the bottom opens the linkedin, but when i return to the app the video has closed, any way you can (easily) keep that running? or at least restore it when i return to the app?
+- the notifications are working but they are not showing on my galaxy watch. i have allowed this app to send notifications to the watch,
+  not sure if an extra step is needed for that, i had hoped that regular notifications would just work. worth noting that galaxy watch is
+  tizen not android, but its connected to my android phone
 
-can you also stop the phone going into lock mode while recording?
+- app crashed :) i was switching a lot and at some point i pressed the camera and it died
 
-mm last one, the notifications are working but they are not showing on my galaxy watch. i have allowed this app to send notifications to the watch, not sure if an extra step is needed for that, i had hoped that regular notifications would just work
-
-worth noting that galaxy watch is tizen not android, but its connected to my android phone
-
-app crashed :) i was switching a lot and at some point i pressed the camera and it died
-
-oh one more thing, it's having trouble with utf8 emojis i think, see this guy's title
+- oh one more thing, it's having trouble with utf8 emojis i think, see this guy's title
 
 
 

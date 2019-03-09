@@ -10,7 +10,7 @@ import android.graphics.Bitmap;
  */
 public class FaceMatchItem {
 
-    public boolean blink = false;
+//    public boolean blink = false;
 
     public String awsFaceId;
 
