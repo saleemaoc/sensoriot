@@ -1,6 +1,8 @@
 package com.edexelroots.android.sensoriot.vision;
 
+import android.support.text.emoji.EmojiCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,15 +10,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.edexelroots.android.sensoriot.R;
+import com.edexelroots.android.sensoriot.SensorIoTApp;
+import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.vision.FaceMatchFragment.OnFaceFragmentListener;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link FaceMatchItem} and makes a call to the
  * specified {@link OnFaceFragmentListener}.
- * TODO: Replace the implementation with code for your data type.
  */
 public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.ViewHolder> {
 
@@ -40,9 +47,13 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
         holder.mNameView.setText(holder.mItem.name + "  (" + holder.mItem.similarity + ")");
-        holder.mSubtitleView.setText(holder.mItem.subtitle);
 
-        holder.mCounter.setText(holder.mItem.counter + "");
+        //String a = "&#92;uD83D&#92;uDC64Entrepreneur &#92;uD83D&#92;uDC54 CEO &#92;uD83D&#92;uDCF1PassKit ❤️ LoopyLoyalty";
+        String unescaped = StringEscapeUtils.unescapeHtml4(holder.mItem.subtitle);
+        String out = StringEscapeUtils.unescapeJava(unescaped);
+        holder.mSubtitleView.setText(out);
+
+        // holder.mCounter.setText(holder.mItem.counter + "");
         holder.mImageView.setImageBitmap(holder.mItem.image);
 
         holder.mView.setOnClickListener(v -> {
@@ -73,7 +84,7 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
         public final ImageView mImageView;
         public final View mHighlightView;
 
-        public final TextView mCounter;
+        // public final TextView mCounter;
 
         public ViewHolder(View view) {
             super(view);
@@ -81,7 +92,7 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
             mNameView = view.findViewById(R.id.name);
             mSubtitleView = view.findViewById(R.id.subtitle);
             mImageView = view.findViewById(R.id.cropped);
-            mCounter = view.findViewById(R.id.counter);
+            //mCounter = view.findViewById(R.id.counter);
             this.mHighlightView = view.findViewById(R.id.highlight_view);
         }
 

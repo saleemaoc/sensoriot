@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobile.client.AWSMobileClient;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.rekognition.AmazonRekognition;
@@ -89,6 +90,7 @@ public class StreamManager {
         matchThreshold = threshold;
         CognitoCachingCredentialsProvider cp = new CognitoCachingCredentialsProvider(c, MqttPublishManager.COGNITO_POOL_ID, FaceTrackerActivity.REGION);
         rekognitionClient = new AmazonRekognitionClient(cp);
+
         rekognitionClient.setRegion(Region.getRegion(FaceTrackerActivity.REGION));
         rekognitionClient.setEndpoint("rekognition.ap-northeast-1.amazonaws.com");
         mContext = c;

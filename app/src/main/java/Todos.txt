@@ -1,11 +1,11 @@
 
-- limit the search to 1 result. rekognition should return the best match in that case
+done - limit the search to 1 result. rekognition should return the best match in that case
 
-- also, if its recognized a person and they are shown in the panel below, it doesn't need to alert if it sees them again, once is enough
+done - also, if its recognized a person and they are shown in the panel below, it doesn't need to alert if it sees them again, once is enough
 
-- is the purple circle a counter for how often they have been recognized? that's not needed as it only needs to see them once and alert me, after that just leave them in the list
+done - is the purple circle a counter for how often they have been recognized? that's not needed as it only needs to see them once and alert me, after that just leave them in the list
 
-- new recognitions should go above the existing ones. so if it spots 3 different people in a row, the most recent one would be at the top of that list
+done - new recognitions should go above the existing ones. so if it spots 3 different people in a row, the most recent one would be at the top of that list
 
 done - can we scroll through the list but keep the video in place?
 
@@ -13,9 +13,9 @@ done - can we scroll through the list but keep the video in place?
 
 - i dont mind if video is cropped, i just need a rough idea of where it is pointing so i can make sure its positioned to capture faces correctly
 
-- if i click one of the notifications (top of my screen) it seems to reset the app, closes the video and loses the list
+- if i click one of the notifications (top of my screen) it seems to reset the app, closes the video and loses the list. should bring the activity to front
 
-- clicking the face entry at the bottom opens the linkedin, but when i return to the app the video has closed, any way you can (easily) keep that running? or at least restore it when i return to the app?
+done - clicking the face entry at the bottom opens the linkedin, but when i return to the app the video has closed, any way you can (easily) keep that running? or at least restore it when i return to the app?
 
 - can you also stop the phone going into lock mode while recording?
 

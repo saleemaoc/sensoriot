@@ -37,6 +37,7 @@
             android:textColor="@color/colorPrimaryDark"
             android:textAppearance="?attr/textAppearanceListItem"
             android:textSize="14sp" />
+
         <TextView
             android:id="@+id/subtitle"
             android:layout_width="wrap_content"
@@ -45,6 +46,17 @@
             android:textColor="@color/colorPrimaryDark"
             android:textAppearance="?attr/textAppearanceListItem"
             android:textSize="10sp" />
+<!--
+
+        <android.support.text.emoji.widget.EmojiTextView
+            android:id="@+id/subtitle"
+            android:layout_marginLeft="@dimen/text_margin"
+            android:textColor="@color/colorPrimaryDark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+-->
+
+
         </LinearLayout>
 
         <TextView
@@ -60,6 +72,7 @@
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
             android:layout_marginRight="12dp"
+            android:visibility="invisible"
             android:layout_height="30dp" />
 
     </RelativeLayout>

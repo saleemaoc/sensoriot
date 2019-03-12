@@ -14,9 +14,9 @@ public class FaceMatchItem {
 
     public String awsFaceId;
 
-    public String name;
-    public String subtitle;
-    public String url;
+    public String name = "";
+    public String subtitle = "";
+    public String url = "";
 
     public Bitmap image;
     public float similarity = 0f;

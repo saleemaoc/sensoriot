@@ -109,6 +109,8 @@ public class MyFaceDetector extends Detector {
                 int width = (int) face.getWidth() + extensionOffset;
                 int height = (int) face.getHeight() + extensionOffset;
 
+                top = top > 0 ? top : 0;
+
                 try {
                     Bitmap clipped = Bitmap.createBitmap(bitmap, left, top, width, height);
                     bitmap.recycle();

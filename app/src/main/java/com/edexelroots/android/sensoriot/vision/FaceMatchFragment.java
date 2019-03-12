@@ -30,7 +30,7 @@ public class FaceMatchFragment extends Fragment {
 
     public static List<FaceMatchItem> mItems = new ArrayList<>();
     FaceMatchAdapter mAdapter = null;
-    private String threeDots = " Loading ... ";
+    // private String threeDots = " Loading ... ";
     RecyclerView recyclerView = null;
 
     /**

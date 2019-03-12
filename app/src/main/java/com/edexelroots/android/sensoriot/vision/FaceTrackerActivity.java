@@ -40,10 +40,12 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.text.emoji.EmojiCompat;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -62,6 +64,7 @@ import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCa
 import com.amazonaws.regions.Regions;
 import com.edexelroots.android.sensoriot.CredentialsReciever;
 import com.edexelroots.android.sensoriot.R;
+import com.edexelroots.android.sensoriot.SensorIoTApp;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.AWSAuthHandler;
@@ -82,6 +85,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import io.github.rockerhieu.emojiconize.Emojiconize;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -124,6 +128,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
      */
     @Override
     public void onCreate(Bundle icicle) {
+        Emojiconize.activity(this).go();
         super.onCreate(icicle);
         setContentView(R.layout.main);
 
@@ -150,7 +155,10 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             requestCameraPermission();
         }
 
+        mFaceMatchFragment = (FaceMatchFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_facematch);
+
         if (null == icicle) {
+            Utils.logE(getClass().getName(), "null == icicle");
             signInAWSCognito();
             fab.setEnabled(false);
             fab.hide();
@@ -158,6 +166,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             // clear faces list
             mFaceMatchFragment.clear();
         } else {
+            Utils.logE(getClass().getName(), "null != icicle");
             showHidePreview(icicle.getBoolean(KEY_PREVIEW_SHOWN) && Utils.isConnected(this));
             fab.setEnabled(true);
             hideProgress();
@@ -165,16 +174,20 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     }
 
 
+    boolean isAWSInitialized = false;
     protected void signInAWSCognito() {
+        isAWSInitialized = false;
+        Utils.logE(getClass().getName(), "signInAWSCognito");
         AWSMobileClient.getInstance().initialize(this, awsStartupResult -> {
 
             final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
+
             if (!identityManager.isUserSignedIn()) {
                 AuthUIConfiguration config =
                         new AuthUIConfiguration.Builder()
                                 .userPools(true)  // true? show the Email and Password UI
                                 .backgroundColor(Color.BLUE) // Change the backgroundColor
-                                .isBackgroundColorFullScreen(true) // Full screen backgroundColor the backgroundColor full screenff
+//                                .isBackgroundColorFullScreen(true) // Full screen backgroundColor the backgroundColor full screenff
                                 .fontFamily("sans-serif-light") // Apply sans-serif-light as the global font
                                 .canCancel(false)
                                 .build();
@@ -187,16 +200,23 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     }
 
     public void setupSession() {
+        Utils.logE(getClass().getName(), "setup session");
         if (!Utils.isConnected(this)) {
             // we don't have connectivity
             Snackbar.make(mFaceMatchFragment.getView(), "No internet connectivity!", Snackbar.LENGTH_INDEFINITE).show();
             hideProgress();
             return;
         }
-        Snackbar.make(findViewById(R.id.fab), "Please wait...", Snackbar.LENGTH_SHORT).show();
         final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
-        final CognitoUserPool userPool = new CognitoUserPool(this, identityManager.getConfiguration());
-        userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(this, this, identityManager));
+        CognitoCachingCredentialsProvider cccp = identityManager.getUnderlyingProvider();
+//        if(cccp == null) {
+            Snackbar.make(findViewById(R.id.fab), "Please wait...", Snackbar.LENGTH_SHORT).show();
+            final CognitoUserPool userPool = new CognitoUserPool(this, identityManager.getConfiguration());
+            userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(this, this, identityManager));
+/*        } else {
+            Utils.logE(getClass().getName(), "we already have cccp");
+            onCredentialsRecieved(cccp);
+        }*/
     }
 
     /**
@@ -217,13 +237,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
         final Activity thisActivity = this;
 
-        View.OnClickListener listener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ActivityCompat.requestPermissions(thisActivity, permissions,
-                        RC_HANDLE_CAMERA_PERM);
-            }
-        };
+        View.OnClickListener listener = view -> ActivityCompat.requestPermissions(thisActivity, permissions, RC_HANDLE_CAMERA_PERM);
 
         Snackbar.make(mGraphicOverlay, R.string.permission_camera_rationale,
                 Snackbar.LENGTH_INDEFINITE)
@@ -304,6 +318,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
+        if(isAWSInitialized) {
+            showHidePreview(true);
+        }
     }
 
     /**
@@ -370,7 +387,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             }
             animate(mPreview, ratio, show);
             animate(mFaceMatchFragment.getView(), 1 - ratio, show);
-        } else {
+        } else if(mFaceMatchFragment != null) {
             animate(mPreview, 0f, show);
             animate(mFaceMatchFragment.getView(), 1f, show);
         }
@@ -467,13 +484,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    public View onCreateView(String name, Context context, AttributeSet attrs) {
-        View view = super.onCreateView(name, context, attrs);
-        mFaceMatchFragment = (FaceMatchFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_facematch);
-        return view;
-    }
-
     public static Bitmap rotateBitmap(Bitmap source, float angle) {
         Matrix matrix = new Matrix();
         matrix.postRotate(angle);
@@ -562,6 +572,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                         runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
                         return;
                     }
+                    Utils.logE(getClass().getName(), faceResponse.name + ", " + faceResponse.title + ", " + fmi.awsFaceId);
                     fmi.name = faceResponse.name;
                     fmi.subtitle = faceResponse.title;
                     fmi.url = faceResponse.url;
@@ -584,7 +595,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     @Override
     public void OnFaceItemClicked(FaceMatchItem item) {
         if (TextUtils.isEmpty(item.url)) {
-            Toast.makeText(this, "Profile not found!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, item.name, Toast.LENGTH_SHORT).show();
             return;
         }
         Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(item.url));
@@ -593,6 +604,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
     @Override
     public void onCredentialsRecieved(CognitoCachingCredentialsProvider credentialsProvider) {
+        isAWSInitialized = true;
         hideProgress();
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setEnabled(true);
@@ -624,7 +636,17 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
         Intent notificationIntent = new Intent(this, FaceTrackerActivity.class);
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+
+        notificationIntent.addCategory(Intent.ACTION_MAIN);
+        notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        notificationIntent.setClass(this, FaceTrackerActivity.class);
+
+        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT|
+                Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+
         stackBuilder.addNextIntent(notificationIntent);
+        stackBuilder.addParentStack(this);
         PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
         mBuilder.setContentIntent(resultPendingIntent);
 
