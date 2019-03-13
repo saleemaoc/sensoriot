@@ -3,10 +3,6 @@ package com.edexelroots.android.sensoriot;
 import android.app.Application;
 import android.graphics.Color;
 import android.support.annotation.Nullable;
-import android.support.text.emoji.EmojiCompat;
-import android.support.text.emoji.FontRequestEmojiCompatConfig;
-import android.support.text.emoji.bundled.BundledEmojiCompatConfig;
-import android.support.v4.provider.FontRequest;
 
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.mobile.auth.core.IdentityManager;
@@ -26,43 +22,6 @@ public class SensorIoTApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
-/*        QueryBuilder queryBuilder = new QueryBuilder("Noto Sans")
-                .withWidth(1)
-                .withWeight(1)
-                .withItalic(1)
-                .withBestEffort(true);
-        String query = queryBuilder.build();
-
-
-        FontRequest fontRequest = new FontRequest(
-                "com.google.android.gms.fonts",
-                "com.google.android.gms",
-                query,
-                R.array.com_google_android_gms_fonts_certs);
-        EmojiCompat.Config config = new FontRequestEmojiCompatConfig(this, fontRequest);
-*/
-
-        EmojiCompat.Config config = new BundledEmojiCompatConfig(this);
-        config.setReplaceAll(true)
-                .setEmojiSpanIndicatorEnabled(true)
-                .setEmojiSpanIndicatorColor(Color.GREEN);
-        config.registerInitCallback(new EmojiCompat.InitCallback() {
-            @Override
-            public void onFailed(@Nullable Throwable throwable) {
-                super.onFailed(throwable);
-                throwable.printStackTrace();
-            }
-
-            @Override
-            public void onInitialized() {
-                super.onInitialized();
-                isEmojiCompatInit = true;
-                Utils.logE(getClass().getName(), "EmojiCompat initialized");
-            }
-
-        });
-        EmojiCompat.init(config);
 
         // this sets the logging level
         // to actually enable logging you also need to run

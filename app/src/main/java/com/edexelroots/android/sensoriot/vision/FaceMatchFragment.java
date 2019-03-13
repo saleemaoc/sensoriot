@@ -81,13 +81,13 @@ public class FaceMatchFragment extends Fragment {
         for (FaceMatchItem i : mItems) {
             if (i.awsFaceId.contentEquals(fmi.awsFaceId)) {
                 // already have recognized this face..
-                Utils.logE(getClass().getName(), "Face already exists");
+                //Utils.logE(getClass().getName(), "Face already exists");
                 existing = i;
                 break;
             }
         }
         if (existing == null) {
-            Utils.logE(getClass().getName(), "Adding Face to List");
+            //Utils.logE(getClass().getName(), "Adding Face to List");
             mItems.add(0, fmi);
             notifyDataSetChanged();
             recyclerView.scheduleLayoutAnimation();

@@ -18,10 +18,12 @@ package com.edexelroots.android.sensoriot.vision;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.NotificationChannel;
+//import android.app.NotificationManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -40,14 +42,11 @@ import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.text.emoji.EmojiCompat;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Html;
 import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -64,7 +63,6 @@ import com.amazonaws.mobileconnectors.kinesisvideo.mediasource.android.AndroidCa
 import com.amazonaws.regions.Regions;
 import com.edexelroots.android.sensoriot.CredentialsReciever;
 import com.edexelroots.android.sensoriot.R;
-import com.edexelroots.android.sensoriot.SensorIoTApp;
 import com.edexelroots.android.sensoriot.StreamManager;
 import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.kinesis.AWSAuthHandler;
@@ -85,7 +83,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import io.github.rockerhieu.emojiconize.Emojiconize;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -128,7 +125,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
      */
     @Override
     public void onCreate(Bundle icicle) {
-        Emojiconize.activity(this).go();
         super.onCreate(icicle);
         setContentView(R.layout.main);
 
@@ -157,6 +153,13 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
         mFaceMatchFragment = (FaceMatchFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_facematch);
 
+/*
+        Bundle bundle = getIntent().getExtras();
+        if(bundle != null) {
+            Utils.logE(getClass().getName(), bundle.getString("test"));
+        }
+*/
+
         if (null == icicle) {
             Utils.logE(getClass().getName(), "null == icicle");
             signInAWSCognito();
@@ -177,7 +180,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     boolean isAWSInitialized = false;
     protected void signInAWSCognito() {
         isAWSInitialized = false;
-        Utils.logE(getClass().getName(), "signInAWSCognito");
+//        Utils.logE(getClass().getName(), "signInAWSCognito");
         AWSMobileClient.getInstance().initialize(this, awsStartupResult -> {
 
             final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
@@ -200,7 +203,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     }
 
     public void setupSession() {
-        Utils.logE(getClass().getName(), "setup session");
+//        Utils.logE(getClass().getName(), "setup session");
         if (!Utils.isConnected(this)) {
             // we don't have connectivity
             Snackbar.make(mFaceMatchFragment.getView(), "No internet connectivity!", Snackbar.LENGTH_INDEFINITE).show();
@@ -572,7 +575,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                         runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
                         return;
                     }
-                    Utils.logE(getClass().getName(), faceResponse.name + ", " + faceResponse.title + ", " + fmi.awsFaceId);
+                    // Utils.logE(getClass().getName(), faceResponse.name + ", " + faceResponse.title + ", " + fmi.awsFaceId);
                     fmi.name = faceResponse.name;
                     fmi.subtitle = faceResponse.title;
                     fmi.url = faceResponse.url;
@@ -622,32 +625,31 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         int notificationId = 1;
         String channelId = "channel-01";
         String channelName = "Rekognition Channel";
-        int importance = NotificationManager.IMPORTANCE_HIGH;
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel mChannel = new NotificationChannel(channelId, channelName, importance);
+            @SuppressLint("WrongConstant") NotificationChannel mChannel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH);
             notificationManager.createNotificationChannel(mChannel);
         }
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channelId)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle(name)
                 .setContentText(url);
 
-        Intent notificationIntent = new Intent(this, FaceTrackerActivity.class);
+//        Intent notificationIntent = new Intent(this, FaceTrackerActivity.class);
+        Intent notificationIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-
-        notificationIntent.addCategory(Intent.ACTION_MAIN);
-        notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        notificationIntent.setClass(this, FaceTrackerActivity.class);
-
+/*
         notificationIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT|
                 Intent.FLAG_ACTIVITY_SINGLE_TOP);
+*/
+//        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
+//        notificationIntent.putExtra("test", "Test");
 
         stackBuilder.addNextIntent(notificationIntent);
-        stackBuilder.addParentStack(this);
-        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_ONE_SHOT);
         mBuilder.setContentIntent(resultPendingIntent);
 
         notificationManager.notify(notificationId, mBuilder.build());

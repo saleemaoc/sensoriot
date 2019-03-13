@@ -284,6 +284,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
 
 
     StreamManager sm = null;
+/*
 
     private void startRekStreamProcessor() {
         Utils.logE(getClass().getName(), "Start Rekog processor!!");
@@ -303,7 +304,9 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
             System.out.println(e.getMessage());
         }
     }
+*/
 
+/*
 
     private void stopRekStreamProcessor() {
         if (sm == null) {
@@ -317,6 +320,7 @@ public class StreamingFragment extends Fragment implements TextureView.SurfaceTe
 
     }
 
+*/
 
     ////
     // TextureView.SurfaceTextureListener methods

@@ -117,8 +117,8 @@ public class StreamManager {
                             .withSettings(streamProcessorSettings).withRoleArn(roleArn).withName(streamProcessorName));
 
             //Display result
-            Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " created.");
-            Utils.logE(getClass().getName(), "StreamProcessorArn - " + createStreamProcessorResult.getStreamProcessorArn());
+            //Utils.logE(getClass().getName(), "Stream Processor " + streamProcessorName + " created.");
+            //Utils.logE(getClass().getName(), "StreamProcessorArn - " + createStreamProcessorResult.getStreamProcessorArn());
         } catch (Exception e) {
 
         }
@@ -140,7 +140,7 @@ public class StreamManager {
                 faceMatchItem.awsFaceId = face.getFace().getFaceId();
                 faceMatchItem.name = "Retrieving information...";//face.getFace().getExternalImageId();
                 faceMatchItem.similarity = face.getSimilarity();
-                Utils.logE(getClass().getName(), faceMatchItem.name);
+                //Utils.logE(getClass().getName(), faceMatchItem.name);
             }
         } catch (AmazonClientException ace) {
             ace.printStackTrace();

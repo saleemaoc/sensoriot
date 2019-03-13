@@ -1,8 +1,6 @@
 package com.edexelroots.android.sensoriot.vision;
 
-import android.support.text.emoji.EmojiCompat;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,14 +8,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.edexelroots.android.sensoriot.R;
-import com.edexelroots.android.sensoriot.SensorIoTApp;
-import com.edexelroots.android.sensoriot.Utils;
 import com.edexelroots.android.sensoriot.vision.FaceMatchFragment.OnFaceFragmentListener;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
-
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 
@@ -48,7 +41,6 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
         holder.mItem = mValues.get(position);
         holder.mNameView.setText(holder.mItem.name + "  (" + holder.mItem.similarity + ")");
 
-        //String a = "&#92;uD83D&#92;uDC64Entrepreneur &#92;uD83D&#92;uDC54 CEO &#92;uD83D&#92;uDCF1PassKit ❤️ LoopyLoyalty";
         String unescaped = StringEscapeUtils.unescapeHtml4(holder.mItem.subtitle);
         String out = StringEscapeUtils.unescapeJava(unescaped);
         holder.mSubtitleView.setText(out);
