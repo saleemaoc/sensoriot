@@ -1,41 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<android.support.design.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/main_content"
-    android:background="#000"
-    android:keepScreenOn="true"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
+    android:keepScreenOn="true">
 
     <LinearLayout
         android:id="@+id/topLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:animateLayoutChanges="true"
-        android:keepScreenOn="true"
-        android:orientation="vertical"
-        android:weightSum="1">
+        android:orientation="vertical">
 
-        <com.edexelroots.android.sensoriot.vision.camera.CameraSourcePreview
-            android:id="@+id/preview"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.6">
+        <LinearLayout
+            android:layout_marginTop="1dp"
+            android:layout_marginBottom="1dp"
+            android:layout_width="@dimen/preview_size_width"
+            android:layout_height="@dimen/preview_size_height"
+            android:layout_centerInParent="true"
+            android:layout_gravity="center">
 
-            <com.edexelroots.android.sensoriot.vision.camera.GraphicOverlay
-                android:id="@+id/faceOverlay"
+            <com.edexelroots.android.sensoriot.vision.camera.CameraSourcePreview
+                android:id="@+id/preview"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent">
 
-        </com.edexelroots.android.sensoriot.vision.camera.CameraSourcePreview>
+                <com.edexelroots.android.sensoriot.vision.camera.GraphicOverlay
+                    android:id="@+id/faceOverlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </com.edexelroots.android.sensoriot.vision.camera.CameraSourcePreview>
+        </LinearLayout>
 
         <fragment
             android:id="@+id/fragment_facematch"
             class="com.edexelroots.android.sensoriot.vision.FaceMatchFragment"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.4"></fragment>
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 
@@ -45,19 +49,21 @@
         android:layout_height="match_parent">
 
         <ProgressBar
-            android:layout_centerInParent="true"
             android:layout_width="60dp"
-            android:layout_height="60dp" />
+            android:layout_height="60dp"
+            android:layout_centerInParent="true" />
     </RelativeLayout>
 
+<!--
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
-        android:backgroundTintMode="src_in"
-        android:backgroundTint="@color/colorPrimary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
+        android:backgroundTint="@color/colorPrimary"
+        android:backgroundTintMode="src_in"
         android:src="@android:drawable/ic_menu_camera" />
+-->
 
 </android.support.design.widget.CoordinatorLayout>

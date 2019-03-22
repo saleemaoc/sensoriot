@@ -130,12 +130,12 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
         mPreview = findViewById(R.id.preview);
         mGraphicOverlay = findViewById(R.id.faceOverlay);
+/*
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
             showHidePreview(true);
-//                startCameraSource();
-//                fab.hide();
         });
+*/
 
         Bundle b = getIntent().getBundleExtra("config");
         if (b != null) {
@@ -163,21 +163,23 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         if (null == icicle) {
             Utils.logE(getClass().getName(), "null == icicle");
             signInAWSCognito();
+            /*
             fab.setEnabled(false);
             fab.hide();
-            showHidePreview(false);
+            */
+            // showHidePreview(false);
             // clear faces list
             mFaceMatchFragment.clear();
         } else {
             Utils.logE(getClass().getName(), "null != icicle");
-            showHidePreview(icicle.getBoolean(KEY_PREVIEW_SHOWN) && Utils.isConnected(this));
-            fab.setEnabled(true);
+            // showHidePreview(icicle.getBoolean(KEY_PREVIEW_SHOWN) && Utils.isConnected(this));
+            // fab.setEnabled(true);
             hideProgress();
         }
     }
 
 
-    boolean isAWSInitialized = false;
+    static boolean isAWSInitialized = false;
     protected void signInAWSCognito() {
         isAWSInitialized = false;
 //        Utils.logE(getClass().getName(), "signInAWSCognito");
@@ -189,7 +191,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                 AuthUIConfiguration config =
                         new AuthUIConfiguration.Builder()
                                 .userPools(true)  // true? show the Email and Password UI
-                                .backgroundColor(Color.BLUE) // Change the backgroundColor
+                                .backgroundColor(getColor(R.color.colorPrimaryDark)) // Change the backgroundColor
 //                                .isBackgroundColorFullScreen(true) // Full screen backgroundColor the backgroundColor full screenff
                                 .fontFamily("sans-serif-light") // Apply sans-serif-light as the global font
                                 .canCancel(false)
@@ -213,7 +215,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
         CognitoCachingCredentialsProvider cccp = identityManager.getUnderlyingProvider();
 //        if(cccp == null) {
-            Snackbar.make(findViewById(R.id.fab), "Please wait...", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(R.id.topLayout), "Please wait...", Snackbar.LENGTH_SHORT).show();
             final CognitoUserPool userPool = new CognitoUserPool(this, identityManager.getConfiguration());
             userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(this, this, identityManager));
 /*        } else {
@@ -280,6 +282,26 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             return;
         }
         int cameraFacing = CameraSource.CAMERA_FACING_BACK;
+
+        int[] hrVr = getHrVr();
+        int hr = hrVr[0];
+        int vr = hrVr[1];
+
+        if (acmsc != null) {
+            cameraFacing = acmsc.getCameraFacing();
+            hr = acmsc.getHorizontalResolution();
+            vr = acmsc.getHorizontalResolution();
+        }
+        mCameraSource = new CameraSource.Builder(context, mFaceDetector)
+                .setRequestedPreviewSize(hr, vr)
+                .setFacing(cameraFacing)
+                .setRequestedFps(30)
+                .setAutoFocusEnabled(true)
+                .build();
+    }
+
+    private int[] getHrVr() {
+        /* preview size can't be greater than half screen height also keeping ratio of width = height so that preview_width = screen_width and there are no black borders */
         int hr = 720, vr = 720;
         DisplayMetrics dm = getResources().getDisplayMetrics();
         float ratio = dm.heightPixels / (float) dm.widthPixels;
@@ -294,25 +316,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             float div = prevVr / (float) vr;
             hr = (int) (hr / div);
         }
-/*
-        Utils.logE(getClass().getName(), dm.widthPixels + " : " + dm.heightPixels + "; Ratio: " + ratio);
-        Utils.logE(getClass().getName(), hr + " : " + vr);
-
-        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mPreview.getLayoutParams();
-        lp.leftMargin = lp.rightMargin = (lp.leftMargin + lp.rightMargin) / 2;
-        mPreview.setLayoutParams(lp);
-*/
-        if (acmsc != null) {
-            cameraFacing = acmsc.getCameraFacing();
-            hr = acmsc.getHorizontalResolution();
-            vr = acmsc.getHorizontalResolution();
-        }
-        mCameraSource = new CameraSource.Builder(context, mFaceDetector)
-                .setRequestedPreviewSize(hr, vr)
-                .setFacing(cameraFacing)
-                .setRequestedFps(30)
-                .setAutoFocusEnabled(true)
-                .build();
+        return new int[]{hr, vr};
     }
 
     /**
@@ -322,7 +326,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
         if(isAWSInitialized) {
-            showHidePreview(true);
+            //showHidePreview(true);
+            startCameraSource();
         }
     }
 
@@ -333,9 +338,10 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         mPreview.stop();
-        showHidePreview(false);
+        //showHidePreview(false);
     }
 
+/*
 
     private Animator.AnimatorListener mAnimatorListener = new Animator.AnimatorListener() {
         @Override
@@ -358,6 +364,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
         }
     };
+*/
 
     @Override
     public void onSaveInstanceState(Bundle state, PersistableBundle outPersistentState) {
@@ -365,7 +372,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         super.onSaveInstanceState(state, outPersistentState);
     }
 
-    private void animate(View view, float weight, boolean previewShown) {
+/*    private void animate(View view, float weight, boolean previewShown) {
         int ms = 0;
         Utils.ViewWeightAnimationWrapper animationWrapper = new Utils.ViewWeightAnimationWrapper(view);
         ObjectAnimator anim = ObjectAnimator.ofFloat(animationWrapper,
@@ -379,8 +386,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         }
         anim.setDuration(ms);
         anim.start();
-    }
+    }*/
 
+/*
     public void showHidePreview(boolean show) {
         previewShown = show;
         if (show) {
@@ -390,11 +398,13 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             }
             animate(mPreview, ratio, show);
             animate(mFaceMatchFragment.getView(), 1 - ratio, show);
+            startCameraSource();
         } else if(mFaceMatchFragment != null) {
             animate(mPreview, 0f, show);
             animate(mFaceMatchFragment.getView(), 1f, show);
         }
     }
+*/
 
     /**
      * Releases the resources associated with the camera source, the associated detector, and the
@@ -583,7 +593,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                     runOnUiThread(() -> {
                         mFaceMatchFragment.notifyDataSetChanged();
                         showNotification(fmi.name, fmi.url);
-                        vibrate(500);
+                        // vibrate(500);
                     });
                 }
             }
@@ -608,10 +618,13 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     @Override
     public void onCredentialsRecieved(CognitoCachingCredentialsProvider credentialsProvider) {
         isAWSInitialized = true;
+        startCameraSource();
         hideProgress();
+/*
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setEnabled(true);
         fab.show();
+*/
     }
 
     private void hideProgress() {
@@ -634,18 +647,14 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, channelId)
                 .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle(name)
+                .setAutoCancel(true)
+                .setContentText("content text")
+                .setTicker(name)
+                .setVibrate(new long[]{0, 500}) //{ delay, vibrate, sleep, vibrate, sleep }
                 .setContentText(url);
 
-//        Intent notificationIntent = new Intent(this, FaceTrackerActivity.class);
         Intent notificationIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-/*
-        notificationIntent.addFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT|
-                Intent.FLAG_ACTIVITY_SINGLE_TOP);
-*/
-//        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-//        notificationIntent.putExtra("test", "Test");
 
         stackBuilder.addNextIntent(notificationIntent);
 
@@ -653,17 +662,6 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         mBuilder.setContentIntent(resultPendingIntent);
 
         notificationManager.notify(notificationId, mBuilder.build());
-    }
-
-    private void vibrate(int millis) {
-        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        // Vibrate for 500 milliseconds
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            v.vibrate(VibrationEffect.createOneShot(millis, VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            //deprecated in API 26
-            v.vibrate(millis);
-        }
     }
 
     //==============================================================================================
