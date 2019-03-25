@@ -1,14 +1,8 @@
-
 done - limit the search to 1 result. rekognition should return the best match in that case
-
 done - also, if its recognized a person and they are shown in the panel below, it doesn't need to alert if it sees them again, once is enough
-
 done - is the purple circle a counter for how often they have been recognized? that's not needed as it only needs to see them once and alert me, after that just leave them in the list
-
 done - new recognitions should go above the existing ones. so if it spots 3 different people in a row, the most recent one would be at the top of that list
-
 done - can we scroll through the list but keep the video in place?
-
 - video could even be a bit smaller, the main feature here is the recognized people
 
 - i dont mind if video is cropped, i just need a rough idea of where it is pointing so i can make sure its positioned to capture faces correctly
