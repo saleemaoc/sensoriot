@@ -29,10 +29,8 @@ or
 { "result": true, "face":{"name":"string","title":"string","url":"string"}}
 
 
-
-
-
-
+:: similarity is excluded now that I am using Tom's face upload api
+:: aws face id is excluded
 
 
 

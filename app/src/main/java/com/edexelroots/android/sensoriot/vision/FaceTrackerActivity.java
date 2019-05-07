@@ -579,7 +579,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         if (faceId != currentFaceId) {
             currentFaceId = faceId;
             if (mFaceMatchFragment != null) {
-                FaceMatchItem fmi = new FaceMatchItem("", 0, "", bitmap);
+                // awsFaceId is set to faceId (from google vision) for now, because now we don't have aws face id yet
+                FaceMatchItem fmi = new FaceMatchItem("" + faceId, 0, "", bitmap);
                 boolean isNewFace = mFaceMatchFragment.addNewFace(fmi);
                 uploadFace(fmi, bitmap);
             }
@@ -626,7 +627,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
         byte[] byteArray = byteArrayOutputStream.toByteArray();
         String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-        Utils.logE(">>> " + getClass().getName(), encoded);
+        //Utils.logE(">>> " + getClass().getName(), encoded);
 
         mFaceApi.uploadFace(encoded, new Callback<FaceUploadResponse>() {
             @Override
@@ -640,11 +641,12 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                         fmi.subtitle = fr.title;
                         fmi.url = fr.url;
 
-                        mFaceMatchFragment.notifyDataSetChanged();
                         showNotification(fmi.name, fmi.url);
                     } else {
+                        mFaceMatchFragment.removeFace(fmi);
                         Snackbar.make(findViewById(R.id.topLayout), faceResponse.message, Snackbar.LENGTH_SHORT).show();
                     }
+                    mFaceMatchFragment.notifyDataSetChanged();
                 }
             }
 
