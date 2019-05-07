@@ -11,7 +11,7 @@ Is there a way we can use the android physical button to lock and dim the screen
 Can the image be included in the notification?
 
 
-- integrate image upload api
+done - integrate image upload api
 Are you currently doing facial recognition in the app and streaming it to kinesis? Would it be more cost effective to do facial recognition in the app then just send the cropped faces to a backend api for identification?
 
 API endpoint for identification using a photo of a face:

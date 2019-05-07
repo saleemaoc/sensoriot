@@ -16,6 +16,6 @@ public class FaceUploadResponse {
     public String message;
 
     @SerializedName("face")
-    FaceResponse face;
+    public FaceResponse face;
 
 }

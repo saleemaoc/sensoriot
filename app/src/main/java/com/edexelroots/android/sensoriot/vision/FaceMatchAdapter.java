@@ -39,7 +39,8 @@ public class FaceMatchAdapter extends RecyclerView.Adapter<FaceMatchAdapter.View
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mNameView.setText(holder.mItem.name + "  (" + holder.mItem.similarity + ")");
+        // holder.mNameView.setText(holder.mItem.name + "  (" + holder.mItem.similarity + ")");
+        holder.mNameView.setText(holder.mItem.name);
 
         String unescaped = StringEscapeUtils.unescapeHtml4(holder.mItem.subtitle);
         String out = StringEscapeUtils.unescapeJava(unescaped);

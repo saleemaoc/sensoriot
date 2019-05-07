@@ -89,17 +89,16 @@ public class MyFaceDetector extends Detector {
             Rect r2 = new Rect(0, 0, right, bottom);
             yuvimage.compressToJpeg(r2, 90, baos);
             byte[] bytes = baos.toByteArray();
-            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
+            //create a rotated bitmap
+            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             Matrix matrix = new Matrix();
             matrix.postRotate(90);
             Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
             bitmap.recycle();
             bitmap = rotated;
 
-            Frame frame2 = new Frame.Builder()
-                    .setBitmap(bitmap)
-                    .build();
+            Frame frame2 = new Frame.Builder().setBitmap(bitmap).build();
             SparseArray<Face> faces = mDelegate.detect(frame2);
 
             if (faces.size() > 0) {

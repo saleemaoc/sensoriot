@@ -47,6 +47,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -69,6 +70,7 @@ import com.edexelroots.android.sensoriot.kinesis.AWSAuthHandler;
 import com.edexelroots.android.sensoriot.kinesis.fragments.StreamingFragment;
 import com.edexelroots.android.sensoriot.vision.api.FaceApiService;
 import com.edexelroots.android.sensoriot.vision.api.FaceResponse;
+import com.edexelroots.android.sensoriot.vision.api.FaceUploadResponse;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.vision.CameraSource;
@@ -522,9 +524,8 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                 .build();
         SparseArray faces = detector.detect(frame);
 */
-//        if (faces.size() > 0) {
-        addFaceToList(faceId, buffer, bitmap);
-//        }
+//        addFaceToList(faceId, buffer, bitmap);
+        addFaceToList2(faceId, bitmap);
     }
 
     public void faceToImageViewPortrait(Bitmap bitmap, int faceId) {
@@ -544,12 +545,12 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                 .build();
         SparseArray faces = detector.detect(frame);
 */
-//        if(faces.size() > 0) {
-        addFaceToList(faceId, buffer, bitmap);
-//        }
+//        addFaceToList(faceId, buffer, bitmap);
+        addFaceToList2(faceId, bitmap);
     }
 
     private void addFaceToList(int faceId, ByteBuffer buffer, Bitmap bitmap) {
+        /* uses AWS face search and then uses Tom's GET API to resolve name, title, profile url */
         if (faceId != currentFaceId) {
             currentFaceId = faceId;
             if (mFaceMatchFragment != null) {
@@ -572,10 +573,23 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         }
     }
 
+    private void addFaceToList2(int faceId, Bitmap bitmap) {
+        /* Directly uses Tom's POST API, by uploading cropped face to the API.. The API returns the details */
+        /* AWS search by face (Stream Manager) is not used here */
+        if (faceId != currentFaceId) {
+            currentFaceId = faceId;
+            if (mFaceMatchFragment != null) {
+                FaceMatchItem fmi = new FaceMatchItem("", 0, "", bitmap);
+                boolean isNewFace = mFaceMatchFragment.addNewFace(fmi);
+                uploadFace(fmi, bitmap);
+            }
+        }
+    }
+
     FaceApiService mFaceApi = new FaceApiService();
 
     private void getFaceDetails(FaceMatchItem fmi) {
-        
+
         mFaceApi.getFace(fmi.awsFaceId, new Callback<FaceResponse>() {
             @Override
             public void onResponse(Call<FaceResponse> call, Response<FaceResponse> response) {
@@ -602,6 +616,41 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             @Override
             public void onFailure(Call<FaceResponse> call, Throwable t) {
 
+            }
+        });
+    }
+
+    private void uploadFace(FaceMatchItem fmi, Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
+        String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+        Utils.logE(">>> " + getClass().getName(), encoded);
+
+        mFaceApi.uploadFace(encoded, new Callback<FaceUploadResponse>() {
+            @Override
+            public void onResponse(Call<FaceUploadResponse> call, Response<FaceUploadResponse> response) {
+                if (response.isSuccessful()) {
+                    FaceUploadResponse faceResponse = response.body();
+                    if(faceResponse.result) {
+                        // we have got a face
+                        FaceResponse fr = faceResponse.face;
+                        fmi.name = fr.name;
+                        fmi.subtitle = fr.title;
+                        fmi.url = fr.url;
+
+                        mFaceMatchFragment.notifyDataSetChanged();
+                        showNotification(fmi.name, fmi.url);
+                    } else {
+                        Snackbar.make(findViewById(R.id.topLayout), faceResponse.message, Snackbar.LENGTH_SHORT).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<FaceUploadResponse> call, Throwable t) {
+                Snackbar.make(findViewById(R.id.topLayout), t.getMessage(), Snackbar.LENGTH_SHORT).show();
             }
         });
     }
