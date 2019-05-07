@@ -1,3 +1,42 @@
+
+- Make it recognize faces from a distance
+It's working quite well, certainly when someone walks up to me or I to them. Doesn't do well from a distance but I guess that would need higher res and cost more bandwidth.
+
+
+- don't pause on screen lock
+Is there a way we can use the android physical button to lock and dim the screen without stopping the app? When I put it in my breast pocket I need to add some paper to prevent it reacting to skin contact through my shirt.
+
+
+- include thumbnail in push notification
+Can the image be included in the notification?
+
+
+- integrate image upload api
+Are you currently doing facial recognition in the app and streaming it to kinesis? Would it be more cost effective to do facial recognition in the app then just send the cropped faces to a backend api for identification?
+
+API endpoint for identification using a photo of a face:
+
+https://s9jffrx7j5.execute-api.ap-southeast-1.amazonaws.com/v1/faceid
+
+body: {"photo":"base_64_encoded_jpg_or_png"}
+
+should be only the base64 string, dont need to include the mime type or base64 at the startr
+
+i will return
+
+{ "result": false, "message":"string"}}
+or
+{ "result": true, "face":{"name":"string","title":"string","url":"string"}}
+
+
+
+
+
+
+
+
+
+
 done - limit the search to 1 result. rekognition should return the best match in that case
 done - also, if its recognized a person and they are shown in the panel below, it doesn't need to alert if it sees them again, once is enough
 done - is the purple circle a counter for how often they have been recognized? that's not needed as it only needs to see them once and alert me, after that just leave them in the list

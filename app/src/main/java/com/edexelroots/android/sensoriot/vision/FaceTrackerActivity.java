@@ -575,6 +575,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     FaceApiService mFaceApi = new FaceApiService();
 
     private void getFaceDetails(FaceMatchItem fmi) {
+        
         mFaceApi.getFace(fmi.awsFaceId, new Callback<FaceResponse>() {
             @Override
             public void onResponse(Call<FaceResponse> call, Response<FaceResponse> response) {

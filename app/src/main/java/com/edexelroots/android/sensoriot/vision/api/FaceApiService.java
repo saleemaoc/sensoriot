@@ -13,6 +13,7 @@ public class FaceApiService {
 
     FaceRestApi restApi;
     public static final String BASE_URL = "https://s9jffrx7j5.execute-api.ap-southeast-1.amazonaws.com/v1/";
+
     public FaceApiService(){
         Gson gson = new GsonBuilder().serializeNulls().create();
         Retrofit retrofit = new Retrofit.Builder()
@@ -29,6 +30,18 @@ public class FaceApiService {
         }
         Call<FaceResponse> faceCall = restApi.getFace(faceId);
         faceCall.enqueue(callback);
+    }
+
+    public void uploadFace(String photo, Callback<FaceUploadResponse> callback) {
+        if(restApi == null) {
+            Utils.logE(getClass().getName(), "restApi is null");
+            return;
+        }
+
+        FaceUploadRequest fur = new FaceUploadRequest();
+        fur.photo = photo;
+        Call<FaceUploadResponse> faceUploadCall = restApi.uploadFace(fur);
+        faceUploadCall.enqueue(callback);
     }
 
 }
