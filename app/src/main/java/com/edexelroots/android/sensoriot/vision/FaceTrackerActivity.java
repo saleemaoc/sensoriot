@@ -16,8 +16,6 @@
 package com.edexelroots.android.sensoriot.vision;
 
 import android.Manifest;
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -32,15 +30,14 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Matrix;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
-import android.os.VibrationEffect;
-import android.os.Vibrator;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
@@ -50,8 +47,8 @@ import android.text.TextUtils;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Size;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Toast;
 
 import com.amazonaws.auth.CognitoCachingCredentialsProvider;
@@ -84,6 +81,9 @@ import com.edexelroots.android.sensoriot.vision.camera.GraphicOverlay;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -112,7 +112,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
     FaceMatchFragment mFaceMatchFragment = null;
 
-//    public static Regions REGION = Regions.AP_NORTHEAST_1;
+    //    public static Regions REGION = Regions.AP_NORTHEAST_1;
     public static Regions REGION = Regions.AP_SOUTHEAST_1;
 
     boolean previewShown = false;
@@ -182,6 +182,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
 
     static boolean isAWSInitialized = false;
+
     protected void signInAWSCognito() {
         isAWSInitialized = false;
 //        Utils.logE(getClass().getName(), "signInAWSCognito");
@@ -217,9 +218,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
         final IdentityManager identityManager = IdentityManager.getDefaultIdentityManager();
         CognitoCachingCredentialsProvider cccp = identityManager.getUnderlyingProvider();
 //        if(cccp == null) {
-            Snackbar.make(findViewById(R.id.topLayout), "Please wait...", Snackbar.LENGTH_SHORT).show();
-            final CognitoUserPool userPool = new CognitoUserPool(this, identityManager.getConfiguration());
-            userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(this, this, identityManager));
+        Snackbar.make(findViewById(R.id.topLayout), "Please wait...", Snackbar.LENGTH_SHORT).show();
+        final CognitoUserPool userPool = new CognitoUserPool(this, identityManager.getConfiguration());
+        userPool.getCurrentUser().getSessionInBackground(new AWSAuthHandler(this, this, identityManager));
 /*        } else {
             Utils.logE(getClass().getName(), "we already have cccp");
             onCredentialsRecieved(cccp);
@@ -304,7 +305,9 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
 
     private int[] getHrVr() {
         /* preview size can't be greater than half screen height also keeping ratio of width = height so that preview_width = screen_width and there are no black borders */
-        int hr = 720, vr = 720;
+        int hr, vr;
+        hr = vr = pickHorizontalResolution();
+
         DisplayMetrics dm = getResources().getDisplayMetrics();
         float ratio = dm.heightPixels / (float) dm.widthPixels;
         if (!Utils.isPortraitMode(this)) {
@@ -318,8 +321,59 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             float div = prevVr / (float) vr;
             hr = (int) (hr / div);
         }
+        Utils.logE(getClass().getName(), "hr: " + hr + ", vr: " + vr);
         return new int[]{hr, vr};
     }
+
+
+    private int pickHorizontalResolution() {
+        int hr = 720;
+        CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+        String cameraId = null;
+        try {
+            for (String id : manager.getCameraIdList()) {
+                cameraId = id;
+                CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
+                // We don't use a front facing camera in this sample.
+                Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
+                if (facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        List<Size> resolutions = getSupportedResolutionsForYUV420_888(this, cameraId);
+        for (Size s : resolutions) {
+            //Utils.logE(getClass().getName(), "size: " + s.getWidth() + ", " + s.getHeight());
+            if (s.getWidth() > hr) {
+                hr = s.getWidth();
+            }
+        }
+        return hr;
+    }
+
+    public static List<Size> getSupportedResolutionsForYUV420_888(Context context, String cameraId) {
+        CameraCharacteristics cameraInfo = getCameraInfo(context, cameraId);
+        StreamConfigurationMap supportedConfigurations = cameraInfo.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+        Size[] sizes = supportedConfigurations.getOutputSizes(35);
+        if (sizes != null && sizes.length != 0) {
+            return Arrays.asList(sizes);
+        } else {
+            return new ArrayList<>(0);
+        }
+    }
+
+    public static CameraCharacteristics getCameraInfo(Context context, String cameraId) {
+        CameraManager cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+
+        try {
+            return cameraManager.getCameraCharacteristics(cameraId);
+        } catch (CameraAccessException var4) {
+            throw new RuntimeException(var4);
+        }
+    }
+
 
     /**
      * Restarts the camera.
@@ -327,7 +381,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
     @Override
     protected void onResume() {
         super.onResume();
-        if(isAWSInitialized) {
+        if (isAWSInitialized) {
             //showHidePreview(true);
             startCameraSource();
         }
@@ -563,7 +617,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
                     } else {
                         runOnUiThread(() -> {
                             boolean isNewFace = mFaceMatchFragment.addNewFace(fmi);
-                            if(isNewFace) {
+                            if (isNewFace) {
                                 getFaceDetails(fmi);
                             }
                         });
@@ -596,7 +650,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             public void onResponse(Call<FaceResponse> call, Response<FaceResponse> response) {
                 if (response.isSuccessful()) {
                     FaceResponse faceResponse = response.body();
-                    if(faceResponse.errorMessage.equalsIgnoreCase("Unknown FaceID")) {
+                    if (faceResponse.errorMessage.equalsIgnoreCase("Unknown FaceID")) {
                         Utils.logE(getClass().getName(), "Unknow FaceID");
                         runOnUiThread(() -> mFaceMatchFragment.removeFace(fmi));
                         return;
@@ -634,7 +688,7 @@ public final class FaceTrackerActivity extends AppCompatActivity implements
             public void onResponse(Call<FaceUploadResponse> call, Response<FaceUploadResponse> response) {
                 if (response.isSuccessful()) {
                     FaceUploadResponse faceResponse = response.body();
-                    if(faceResponse.result) {
+                    if (faceResponse.result) {
                         // we have got a face
                         FaceResponse fr = faceResponse.face;
                         fmi.name = fr.name;
